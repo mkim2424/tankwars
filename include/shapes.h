@@ -12,7 +12,9 @@ typedef enum {
     PROJECTILE,
     BACKGROUND,
     BOX,
-    BALL
+    BALL,
+    ONE,
+    TWO
 } BodyType;
 
 
