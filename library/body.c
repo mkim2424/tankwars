@@ -13,6 +13,7 @@ struct body {
     FreeFunc info_freer;
     bool is_removed;
     bool is_collided;
+    double rate;
 };
 
 Body *body_init(List *shape, double mass, RGBColor color) {
@@ -44,6 +45,7 @@ Body *body_init_with_info(List *shape, double mass, RGBColor color, void *info,
     res->info_freer = info_freer;
     res->is_removed = false;
     res->is_collided = false;
+    res->rate = 0.0;
     return res;
 }
 
@@ -99,6 +101,21 @@ void *body_get_info(Body *body) {
     return body->info;
 }
 
+double body_get_angle(Body *body) {
+    assert(body != NULL);
+    return body->angle;
+}
+
+double body_get_rate(Body *body) {
+    assert(body != NULL);
+    return body->rate;
+}
+
+void body_set_rate(Body *body, double rate) {
+    assert(body != NULL);
+    body->rate = rate;
+}
+
 void body_set_centroid(Body *body, Vector x) {
     assert(body != NULL);
     body->centroid = x;
@@ -139,6 +156,9 @@ void body_tick(Body *body, double dt) {
     Vector avg = vec_add(body_get_velocity(body), vec_multiply(0.5, dv));
     Vector dx  = vec_multiply(dt, avg);
 
+    double angle = body_get_angle(body);
+    double new_angle = angle + body_get_rate(body) * M_PI * dt;
+    body_set_rotation(body, new_angle);
     body_set_centroid(body, vec_add(body->centroid, dx));
     body_set_velocity(body, vec_add(body->velocity, dv));
     body->force = (Vector) {0, 0};
@@ -165,6 +185,3 @@ bool body_is_collided(Body *body) {
     assert(body != NULL);
     return body->is_collided;
 }
-
-
-

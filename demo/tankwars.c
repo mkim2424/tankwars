@@ -49,10 +49,28 @@ BodyType get_nth_bodytype(Scene *scene, size_t n) {
     return (*tmp).b;
 }
 
+void set_rotation(Body *p) {
+    Vector vel = body_get_velocity(p);
+    if (vel.x != 0 || vel.y != 0) {
+        if (vel.x == vel.y) {
+            body_set_rotation(p, M_PI/4);
+        }
+        else if (vel.x == -vel.y) {
+            body_set_rotation(p, 3*M_PI/4);
+        }
+        else if (vel.x == 0) {
+            body_set_rotation(p, M_PI/2);
+        }
+        else {
+            body_set_rotation(p, 0);
+        }
+    }
+}
+
 // Movement and actions for different keys
 void on_key(char key, KeyEventType type, double held_time, void *aux) {
     Scene *scene = (Scene *) aux;
-    Body *p1, *p2;
+    Body *p1, *p2, *t1;
     Vector vel;
 
     for (int i = 0; i < scene_bodies(scene); i++) {
@@ -62,6 +80,9 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
         if (get_nth_bodytype(scene, i) == TWO) {
             p2 = scene_get_body(scene, i);
         }
+        if (get_nth_bodytype(scene, i) == TURRET_ONE) {
+            t1 = scene_get_body(scene, i);
+        }
     }
     if (type == KEY_PRESSED) {
         switch (key) {
@@ -69,41 +90,59 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                 vel = body_get_velocity(p1);
                 vel.y = PLAYER_SPEED;
                 body_set_velocity(p1, vel);
+                body_set_velocity(t1, vel);
+                set_rotation(p1);
                 break;
             case 115:
                 vel = body_get_velocity(p1);
                 vel.y = -PLAYER_SPEED;
                 body_set_velocity(p1, vel);
+                body_set_velocity(t1, vel);
+                set_rotation(p1);
                 break;
             case 100:
                 vel = body_get_velocity(p1);
                 vel.x = PLAYER_SPEED;
                 body_set_velocity(p1, vel);
+                body_set_velocity(t1, vel);
+                set_rotation(p1);
                 break;
             case 97:
                 vel = body_get_velocity(p1);
                 vel.x = -PLAYER_SPEED;
                 body_set_velocity(p1, vel);
+                body_set_velocity(t1, vel);
+                set_rotation(p1);
+                break;
+            case 114:
+                body_set_rate(t1, 3);
+                break;
+            case 116:
+                body_set_rate(t1, -3);
                 break;
             case UP_ARROW:
                 vel = body_get_velocity(p2);
                 vel.y = PLAYER_SPEED;
                 body_set_velocity(p2, vel);
+                set_rotation(p2);
                 break;
             case DOWN_ARROW:
                 vel = body_get_velocity(p2);
                 vel.y = -PLAYER_SPEED;
                 body_set_velocity(p2, vel);
+                set_rotation(p2);
                 break;
             case RIGHT_ARROW:
                 vel = body_get_velocity(p2);
                 vel.x = PLAYER_SPEED;
                 body_set_velocity(p2, vel);
+                set_rotation(p2);
                 break;
             case LEFT_ARROW:
                 vel = body_get_velocity(p2);
                 vel.x = -PLAYER_SPEED;
                 body_set_velocity(p2, vel);
+                set_rotation(p2);
                 break;
         }
     } else if (type == KEY_RELEASED) {
@@ -113,24 +152,34 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                 vel = body_get_velocity(p1);
                 vel.y = 0;
                 body_set_velocity(p1, vel);
+                body_set_velocity(t1, vel);
+                set_rotation(p1);
                 break;
             case 100:
             case 97:
                 vel = body_get_velocity(p1);
                 vel.x = 0;
                 body_set_velocity(p1, vel);
+                body_set_velocity(t1, vel);
+                set_rotation(p1);
                 break;
             case UP_ARROW:
             case DOWN_ARROW:
                 vel = body_get_velocity(p2);
                 vel.y = 0;
                 body_set_velocity(p2, vel);
+                set_rotation(p2);
                 break;
             case RIGHT_ARROW:
             case LEFT_ARROW:
                 vel = body_get_velocity(p2);
                 vel.x = 0;
                 body_set_velocity(p2, vel);
+                set_rotation(p2);
+                break;
+            case 114:
+            case 116:
+                body_set_rate(t1, 0);
                 break;
         }
     }
@@ -198,6 +247,35 @@ void draw_walls(Scene *scene) {
 
 }
 
+void draw_tanks(Scene *scene) {
+    Body *tank1 = rectangle_shape((Vector) {.x = WIDTH / 8,
+        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 1}, ONE);
+    Body *tank2 = rectangle_shape((Vector) {.x = 7 * WIDTH / 8,
+        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 1, .g = 0, .b = 0}, TWO);
+    Body *turret1 = rectangle_shape((Vector) {.x = WIDTH / 8 + 75,
+        .y = HEIGHT / 2}, TANK_MASS, 200, 30, (RGBColor) {.r = 0, .g = 0, .b = .6}, TURRET_ONE);
+    body_set_velocity(tank1, player_start_velocity);
+    body_set_velocity(tank2, player_start_velocity);
+    body_set_velocity(turret1, player_start_velocity);
+    scene_add_body(scene, tank1);
+    scene_add_body(scene, tank2);
+    scene_add_body(scene, turret1);
+}
+
+void update_turret(Scene *scene) {
+    Body *p1, *t1;
+    for (int i = 0; i < scene_bodies(scene); i++) {
+        if (get_nth_bodytype(scene, i) == ONE) {
+            p1 = scene_get_body(scene, i);
+        }
+        if (get_nth_bodytype(scene, i) == TURRET_ONE) {
+            t1 = scene_get_body(scene, i);
+        }
+    }
+    double new_angle = body_get_angle(t1);
+    body_set_centroid(t1, vec_add(body_get_centroid(p1), (Vector) {.x = cos(new_angle) * 75, .y = sin(new_angle) * 75}));
+}
+
 // Start the game and return all scene components
 Scene *create_game() {
     Scene *scene = scene_init();
@@ -205,14 +283,7 @@ Scene *create_game() {
     sdl_on_key(on_key, scene);
     draw_background(scene);
     draw_walls(scene);
-    Body *tank1 = rectangle_shape((Vector) {.x = WIDTH / 8,
-        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 1}, ONE);
-    Body *tank2 = rectangle_shape((Vector) {.x = 7 * WIDTH / 8,
-        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 1, .g = 0, .b = 0}, TWO);
-    body_set_velocity(tank1, player_start_velocity);
-    body_set_velocity(tank2, player_start_velocity);
-    scene_add_body(scene, tank1);
-    scene_add_body(scene, tank2);
+    draw_tanks(scene);
     return scene;
 }
 
@@ -221,6 +292,7 @@ int main(int argc, char *argv[]) {
     Scene *scene = create_game();
     while (!sdl_is_done()) {
         dt = time_since_last_tick();
+        update_turret(scene);
         scene_tick(scene, dt);
         sdl_render_scene(scene);
     }
