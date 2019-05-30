@@ -12,7 +12,9 @@
 #define HEIGHT 2000
 #define TANK_MASS 10
 #define TANK_WIDTH 200
-#define TANK_HEIGHT 150
+#define TANK_HEIGHT 125
+#define WALL_LENGTH 150
+#define PLAYER_SPEED 2500
 #define ROWS 3
 #define COLUMNS 10
 #define OFFSET 10
@@ -29,8 +31,11 @@
 
 const Vector min = {.x = 0, .y = 0};
 const Vector max = {.x = WIDTH, .y = HEIGHT};
-const Vector player_right_velocity = {.x = 2000, .y = 0};
-const Vector player_left_velocity = {.x = -2000, .y = 0};
+const Vector player_start_velocity = {.x = 0, .y = 0};
+const Vector player_up_velocity = {.x = 0, .y = PLAYER_SPEED};
+const Vector player_down_velocity = {.x = 0, .y = -PLAYER_SPEED};
+const Vector player_right_velocity = {.x = PLAYER_SPEED, .y = 0};
+const Vector player_left_velocity = {.x = -PLAYER_SPEED, .y = 0};
 const Vector ball_velocity = {.x = 1000, .y = 2000};
 
 /*
@@ -44,29 +49,90 @@ BodyType get_nth_bodytype(Scene *scene, size_t n) {
     return (*tmp).b;
 }
 
-
 // Movement and actions for different keys
 void on_key(char key, KeyEventType type, double held_time, void *aux) {
     Scene *scene = (Scene *) aux;
-    Body *player;
+    Body *p1, *p2;
+    Vector vel;
 
     for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == PLAYER) {
-            player = scene_get_body(scene, i);
-            break;
+        if (get_nth_bodytype(scene, i) == ONE) {
+            p1 = scene_get_body(scene, i);
+        }
+        if (get_nth_bodytype(scene, i) == TWO) {
+            p2 = scene_get_body(scene, i);
         }
     }
     if (type == KEY_PRESSED) {
         switch (key) {
+            case 119:
+                vel = body_get_velocity(p1);
+                vel.y = PLAYER_SPEED;
+                body_set_velocity(p1, vel);
+                break;
+            case 115:
+                vel = body_get_velocity(p1);
+                vel.y = -PLAYER_SPEED;
+                body_set_velocity(p1, vel);
+                break;
+            case 100:
+                vel = body_get_velocity(p1);
+                vel.x = PLAYER_SPEED;
+                body_set_velocity(p1, vel);
+                break;
+            case 97:
+                vel = body_get_velocity(p1);
+                vel.x = -PLAYER_SPEED;
+                body_set_velocity(p1, vel);
+                break;
+            case UP_ARROW:
+                vel = body_get_velocity(p2);
+                vel.y = PLAYER_SPEED;
+                body_set_velocity(p2, vel);
+                break;
+            case DOWN_ARROW:
+                vel = body_get_velocity(p2);
+                vel.y = -PLAYER_SPEED;
+                body_set_velocity(p2, vel);
+                break;
             case RIGHT_ARROW:
-                body_set_velocity(player, player_right_velocity);
+                vel = body_get_velocity(p2);
+                vel.x = PLAYER_SPEED;
+                body_set_velocity(p2, vel);
                 break;
             case LEFT_ARROW:
-                body_set_velocity(player, player_left_velocity);
+                vel = body_get_velocity(p2);
+                vel.x = -PLAYER_SPEED;
+                body_set_velocity(p2, vel);
                 break;
         }
     } else if (type == KEY_RELEASED) {
-        body_set_velocity(player, (Vector) {.x = 0, .y = 0});
+        switch (key) {
+            case 119:
+            case 115:
+                vel = body_get_velocity(p1);
+                vel.y = 0;
+                body_set_velocity(p1, vel);
+                break;
+            case 100:
+            case 97:
+                vel = body_get_velocity(p1);
+                vel.x = 0;
+                body_set_velocity(p1, vel);
+                break;
+            case UP_ARROW:
+            case DOWN_ARROW:
+                vel = body_get_velocity(p2);
+                vel.y = 0;
+                body_set_velocity(p2, vel);
+                break;
+            case RIGHT_ARROW:
+            case LEFT_ARROW:
+                vel = body_get_velocity(p2);
+                vel.x = 0;
+                body_set_velocity(p2, vel);
+                break;
+        }
     }
 }
 
@@ -96,21 +162,6 @@ void check_boundary(Scene *scene) {
     }
 }
 
-// Draw the boundary walls
-void draw_background(Scene *scene) {
-    Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = HEIGHT / 2}, INFINITE_MASS,
-        WIDTH, HEIGHT, (RGBColor) {.r = .8671, .g = .7187, .b = .5273}, BACKGROUND);
-    scene_add_body(scene, b1);
-}
-
-// Draw the player
-void draw_player(Scene *scene, Body *ball) {
-    Body *player = rectangle_shape((Vector) {.x = WIDTH/2, .y = PLAYER_HEIGHT}, INFINITE_MASS,
-        PLAYER_WIDTH, PLAYER_HEIGHT, (RGBColor) {.r = 1, .g = 0, .b = 0}, PLAYER);
-    scene_add_body(scene, player);
-    create_physics_collision(scene, 1, ball, player);
-}
-
 // Draw the rows and columns of boxes
 void draw_boxes(Scene *scene, Body *ball) {
     size_t i, j;
@@ -129,56 +180,40 @@ void draw_boxes(Scene *scene, Body *ball) {
     }
 }
 
+// Draw the ground
+void draw_background(Scene *scene) {
+    Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = HEIGHT / 2}, INFINITE_MASS,
+        WIDTH, HEIGHT, (RGBColor) {.r = .93, .g = .875, .b = .7273}, BACKGROUND);
+    scene_add_body(scene, b1);
+}
+
+// Draw the terrain walls
+void draw_walls(Scene *scene) {
+    for (size_t i = 0; i < 8; i++) {
+        Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = (HEIGHT / 2) - (3.5 * WALL_LENGTH) + (i * WALL_LENGTH)}, INFINITE_MASS,
+            WALL_LENGTH, WALL_LENGTH, (RGBColor) {.r = .52, .g = .52, .b = .52}, WALL);
+        scene_add_body(scene, b1);
+    }
+
+
+}
+
 // Start the game and return all scene components
 Scene *create_game() {
     Scene *scene = scene_init();
     sdl_init(min, max);
     sdl_on_key(on_key, scene);
     draw_background(scene);
+    draw_walls(scene);
     Body *tank1 = rectangle_shape((Vector) {.x = WIDTH / 8,
         .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 1}, ONE);
     Body *tank2 = rectangle_shape((Vector) {.x = 7 * WIDTH / 8,
         .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 1, .g = 0, .b = 0}, TWO);
+    body_set_velocity(tank1, player_start_velocity);
+    body_set_velocity(tank2, player_start_velocity);
     scene_add_body(scene, tank1);
     scene_add_body(scene, tank2);
     return scene;
-}
-
-// Check if ball has gone off the screen
-Scene *check_ball(Scene *scene) {
-    for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == BALL) {
-            Body *ball = scene_get_body(scene, i);
-            if (body_get_centroid(ball).y < 0) {
-                return create_game();
-            }
-        }
-    }
-    return scene;
-}
-
-// Move row of boxes down
-void move_row(Scene *scene) {
-    for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == BOX) {
-            Body *box = scene_get_body(scene, i);
-            body_set_centroid(box, vec_subtract(body_get_centroid(box),
-                (Vector) {.x = 0, .y = BOX_OFFSET + PLAYER_HEIGHT}));
-        }
-    }
-}
-
-// Check if boxes have reached the bottom
-bool check_box_collide_player(Scene *scene) {
-    for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == BOX) {
-            Body *box = scene_get_body(scene, i);
-            if (body_get_centroid(box).y < 2 * PLAYER_HEIGHT) {
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 int main(int argc, char *argv[]) {

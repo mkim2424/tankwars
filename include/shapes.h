@@ -14,7 +14,8 @@ typedef enum {
     BOX,
     BALL,
     ONE,
-    TWO
+    TWO,
+    WALL
 } BodyType;
 
 
