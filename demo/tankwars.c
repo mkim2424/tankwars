@@ -25,8 +25,6 @@
 #define VERTICAL_OFFSET 10
 #define PLAYER_HEIGHT 50
 #define PLAYER_WIDTH 200
-#define BALL_RADIUS 10
-#define BALL_MASS 10
 #define INFINITE_MASS 10000000
 
 const Vector min = {.x = 0, .y = 0};
@@ -70,7 +68,7 @@ void set_rotation(Body *p) {
 // Movement and actions for different keys
 void on_key(char key, KeyEventType type, double held_time, void *aux) {
     Scene *scene = (Scene *) aux;
-    Body *p1, *p2, *t1;
+    Body *p1, *p2, *t1, *t2;
     Vector vel;
 
     for (int i = 0; i < scene_bodies(scene); i++) {
@@ -82,6 +80,9 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
         }
         if (get_nth_bodytype(scene, i) == TURRET_ONE) {
             t1 = scene_get_body(scene, i);
+        }
+        if (get_nth_bodytype(scene, i) == TURRET_TWO) {
+            t2 = scene_get_body(scene, i);
         }
     }
     if (type == KEY_PRESSED) {
@@ -144,6 +145,12 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                 body_set_velocity(p2, vel);
                 set_rotation(p2);
                 break;
+            case 110:
+                body_set_rate(t2, 3);
+                break;
+            case 109:
+                body_set_rate(t2, -3);
+                break;
         }
     } else if (type == KEY_RELEASED) {
         switch (key) {
@@ -180,6 +187,10 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
             case 114:
             case 116:
                 body_set_rate(t1, 0);
+                break;
+            case 110:
+            case 109:
+                body_set_rate(t2, 0);
                 break;
         }
     }
@@ -254,16 +265,20 @@ void draw_tanks(Scene *scene) {
         .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 1, .g = 0, .b = 0}, TWO);
     Body *turret1 = rectangle_shape((Vector) {.x = WIDTH / 8 + 75,
         .y = HEIGHT / 2}, TANK_MASS, 200, 30, (RGBColor) {.r = 0, .g = 0, .b = .6}, TURRET_ONE);
+    Body *turret2 = rectangle_shape((Vector) {.x = 7 * WIDTH / 8 - 75,
+        .y = HEIGHT / 2}, TANK_MASS, 200, 30, (RGBColor) {.r = .6, .g = 0, .b = 0}, TURRET_TWO);
     body_set_velocity(tank1, player_start_velocity);
     body_set_velocity(tank2, player_start_velocity);
     body_set_velocity(turret1, player_start_velocity);
+    body_set_velocity(turret2, player_start_velocity);
     scene_add_body(scene, tank1);
     scene_add_body(scene, tank2);
     scene_add_body(scene, turret1);
+    scene_add_body(scene, turret2);
 }
 
 void update_turret(Scene *scene) {
-    Body *p1, *t1;
+    Body *p1, *p2, *t1, *t2;
     for (int i = 0; i < scene_bodies(scene); i++) {
         if (get_nth_bodytype(scene, i) == ONE) {
             p1 = scene_get_body(scene, i);
@@ -271,9 +286,17 @@ void update_turret(Scene *scene) {
         if (get_nth_bodytype(scene, i) == TURRET_ONE) {
             t1 = scene_get_body(scene, i);
         }
+        if (get_nth_bodytype(scene, i) == TWO) {
+            p2 = scene_get_body(scene, i);
+        }
+        if (get_nth_bodytype(scene, i) == TURRET_TWO) {
+            t2 = scene_get_body(scene, i);
+        }
     }
     double new_angle = body_get_angle(t1);
     body_set_centroid(t1, vec_add(body_get_centroid(p1), (Vector) {.x = cos(new_angle) * 75, .y = sin(new_angle) * 75}));
+    new_angle = body_get_angle(t2);
+    body_set_centroid(t2, vec_add(body_get_centroid(p2), (Vector) {.x = cos(new_angle) * -75, .y = sin(new_angle) * -75}));
 }
 
 // Start the game and return all scene components
