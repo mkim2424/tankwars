@@ -75,6 +75,14 @@ void shoot_bullet1(Scene *scene, Body *tank, Body *turret) {
     scene_add_body(scene, bullet);
 }
 
+void shoot_bullet2(Scene *scene, Body *tank, Body *turret) {
+    double angle = body_get_angle(turret);
+    Body *bullet = n_polygon_shape(20, 20, 1000,
+        turret2_color, vec_add(body_get_centroid(tank), (Vector) {.x = cos(angle) * -200, .y = sin(angle) * -200}), BULLET);
+    body_set_velocity(bullet, (Vector) {.x = cos(angle) * -12500, .y = sin(angle) * -12500});
+    scene_add_body(scene, bullet);
+}
+
 // Movement and actions for different keys
 void on_key(char key, KeyEventType type, double held_time, void *aux) {
     Scene *scene = (Scene *) aux;
@@ -164,6 +172,8 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
             case 109:
                 body_set_rate(t2, -3);
                 break;
+            case ' ':
+                shoot_bullet2(scene, p2, t2);
         }
     } else if (type == KEY_RELEASED) {
         switch (key) {
