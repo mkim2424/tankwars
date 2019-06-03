@@ -17,7 +17,8 @@ typedef enum {
     TWO,
     TURRET_ONE,
     TURRET_TWO,
-    WALL
+    WALL,
+    BULLET
 } BodyType;
 
 
@@ -26,7 +27,7 @@ typedef struct {
 } Body_info;
 
 Body *n_polygon_shape(size_t num_sides, double radius, double mass,
-    RGBColor color, Vector centroid);
+    RGBColor color, Vector centroid, BodyType bt);
 
 Body *star_shape(size_t num_sides);
 

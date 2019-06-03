@@ -13,6 +13,8 @@
 #define TANK_MASS 10
 #define TANK_WIDTH 200
 #define TANK_HEIGHT 125
+#define TURRET_WIDTH 200
+#define TURRET_HEIGHT 30
 #define WALL_LENGTH 150
 #define PLAYER_SPEED 2500
 #define ROWS 3
@@ -30,11 +32,11 @@
 const Vector min = {.x = 0, .y = 0};
 const Vector max = {.x = WIDTH, .y = HEIGHT};
 const Vector player_start_velocity = {.x = 0, .y = 0};
-const Vector player_up_velocity = {.x = 0, .y = PLAYER_SPEED};
-const Vector player_down_velocity = {.x = 0, .y = -PLAYER_SPEED};
-const Vector player_right_velocity = {.x = PLAYER_SPEED, .y = 0};
-const Vector player_left_velocity = {.x = -PLAYER_SPEED, .y = 0};
-const Vector ball_velocity = {.x = 1000, .y = 2000};
+const RGBColor tank1_color = {.r = 0, .g = 0, .b = 1};
+const RGBColor turret1_color = {.r = 0, .g = 0, .b = .6};
+const RGBColor tank2_color = {.r = 1, .g = 0, .b = 0};
+const RGBColor turret2_color = {.r = .6, .g = 0, .b = 0};
+const RGBColor wall_color = {.r = .52, .g = .52, .b = .52};
 
 /*
  * Helper function to get the nth bodytype in a scene.
@@ -63,6 +65,14 @@ void set_rotation(Body *p) {
             body_set_rotation(p, 0);
         }
     }
+}
+
+void shoot_bullet1(Scene *scene, Body *tank, Body *turret) {
+    double angle = body_get_angle(turret);
+    Body *bullet = n_polygon_shape(20, 20, 1000,
+        turret1_color, vec_add(body_get_centroid(tank), (Vector) {.x = cos(angle) * 200, .y = sin(angle) * 200}), BULLET);
+    body_set_velocity(bullet, (Vector) {.x = cos(angle) * 12500, .y = sin(angle) * 12500});
+    scene_add_body(scene, bullet);
 }
 
 // Movement and actions for different keys
@@ -120,6 +130,9 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                 break;
             case 116:
                 body_set_rate(t1, -3);
+                break;
+            case 121:
+                shoot_bullet1(scene, p1, t1);
                 break;
             case UP_ARROW:
                 vel = body_get_velocity(p2);
@@ -222,24 +235,6 @@ void check_boundary(Scene *scene) {
     }
 }
 
-// Draw the rows and columns of boxes
-void draw_boxes(Scene *scene, Body *ball) {
-    size_t i, j;
-    double horizontal_size = (WIDTH - ((COLUMNS + 1) * BOX_OFFSET)) / (COLUMNS);
-    for (i = 0; i < ROWS; i++) {
-        for (j = 0; j < COLUMNS; j++) {
-            RGBColor color = get_color(j);
-            Body *box = rectangle_shape((Vector) {.x = (BOX_OFFSET + horizontal_size/2)
-                + (BOX_OFFSET + horizontal_size) * j,
-                .y = (HEIGHT - PLAYER_HEIGHT) - (BOX_OFFSET + PLAYER_HEIGHT) * i}, 1000000,
-                horizontal_size, PLAYER_HEIGHT, color, BOX);
-            scene_add_body(scene, box);
-            create_physics_collision(scene, 1, ball, box);
-            create_half_destructive_collision(scene, ball, box);
-        }
-    }
-}
-
 // Draw the ground
 void draw_background(Scene *scene) {
     Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = HEIGHT / 2}, INFINITE_MASS,
@@ -251,7 +246,7 @@ void draw_background(Scene *scene) {
 void draw_walls(Scene *scene) {
     for (size_t i = 0; i < 8; i++) {
         Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = (HEIGHT / 2) - (3.5 * WALL_LENGTH) + (i * WALL_LENGTH)}, INFINITE_MASS,
-            WALL_LENGTH, WALL_LENGTH, (RGBColor) {.r = .52, .g = .52, .b = .52}, WALL);
+            WALL_LENGTH, WALL_LENGTH, wall_color, WALL);
         scene_add_body(scene, b1);
     }
 
@@ -260,13 +255,13 @@ void draw_walls(Scene *scene) {
 
 void draw_tanks(Scene *scene) {
     Body *tank1 = rectangle_shape((Vector) {.x = WIDTH / 8,
-        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 1}, ONE);
+        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, tank1_color, ONE);
     Body *tank2 = rectangle_shape((Vector) {.x = 7 * WIDTH / 8,
-        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, (RGBColor) {.r = 1, .g = 0, .b = 0}, TWO);
+        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, tank2_color, TWO);
     Body *turret1 = rectangle_shape((Vector) {.x = WIDTH / 8 + 75,
-        .y = HEIGHT / 2}, TANK_MASS, 200, 30, (RGBColor) {.r = 0, .g = 0, .b = .6}, TURRET_ONE);
+        .y = HEIGHT / 2}, TANK_MASS, TURRET_WIDTH, TURRET_HEIGHT, turret1_color, TURRET_ONE);
     Body *turret2 = rectangle_shape((Vector) {.x = 7 * WIDTH / 8 - 75,
-        .y = HEIGHT / 2}, TANK_MASS, 200, 30, (RGBColor) {.r = .6, .g = 0, .b = 0}, TURRET_TWO);
+        .y = HEIGHT / 2}, TANK_MASS, TURRET_WIDTH, TURRET_HEIGHT, turret2_color, TURRET_TWO);
     body_set_velocity(tank1, player_start_velocity);
     body_set_velocity(tank2, player_start_velocity);
     body_set_velocity(turret1, player_start_velocity);

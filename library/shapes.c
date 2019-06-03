@@ -6,7 +6,7 @@
 
 
 Body *n_polygon_shape(size_t num_sides, double radius, double mass,
-    RGBColor color, Vector centroid) {
+    RGBColor color, Vector centroid, BodyType bt) {
     List *vertices = list_init(num_sides, (FreeFunc) vec_free);
     double theta = 2 * M_PI / num_sides;
     Vector start = (Vector) {.x = radius, .y = 0};
@@ -17,7 +17,7 @@ Body *n_polygon_shape(size_t num_sides, double radius, double mass,
         list_add(vertices, vec_init(tmp.x, tmp.y));
     }
     Body_info *body_i = malloc(sizeof(Body_info));
-    body_i->b = BALL;
+    body_i->b = bt;
 
     Body *res = body_init_with_info(vertices, mass, color, body_i, free);
     body_set_centroid(res, centroid);
