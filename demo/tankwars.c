@@ -259,8 +259,23 @@ void draw_walls(Scene *scene) {
             WALL_LENGTH, WALL_LENGTH, wall_color, WALL);
         scene_add_body(scene, b1);
     }
+}
 
-
+void draw_boundaries(Scene *scene) {
+    for (size_t i = 0; i < 8; i++) {
+        Body *b1 = rectangle_shape((Vector) {.x = WIDTH/2, .y = HEIGHT}, INFINITE_MASS,
+            WIDTH, 20, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
+        Body *b2 = rectangle_shape((Vector) {.x = WIDTH/2, .y = 0}, INFINITE_MASS,
+            WIDTH, 20, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
+        Body *b3 = rectangle_shape((Vector) {.x = 0, .y = HEIGHT/2}, INFINITE_MASS,
+            20, HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
+        Body *b4 = rectangle_shape((Vector) {.x = WIDTH, .y = HEIGHT/2}, INFINITE_MASS,
+            20, HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
+        scene_add_body(scene, b1);
+        scene_add_body(scene, b2);
+        scene_add_body(scene, b3);
+        scene_add_body(scene, b4);
+    }
 }
 
 void draw_tanks(Scene *scene) {
@@ -310,6 +325,7 @@ Scene *create_game() {
     sdl_init(min, max);
     sdl_on_key(on_key, scene);
     draw_background(scene);
+    draw_boundaries(scene);
     draw_walls(scene);
     draw_tanks(scene);
     return scene;
