@@ -27,7 +27,7 @@
 #define VERTICAL_OFFSET 10
 #define PLAYER_HEIGHT 50
 #define PLAYER_WIDTH 200
-#define INFINITE_MASS 10000000
+#define INFINITE_MASS INFINITY
 
 const Vector min = {.x = 0, .y = 0};
 const Vector max = {.x = WIDTH, .y = HEIGHT};
@@ -106,11 +106,13 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
     if (type == KEY_PRESSED) {
         switch (key) {
             case 119:
-                vel = body_get_velocity(p1);
-                vel.y = PLAYER_SPEED;
-                body_set_velocity(p1, vel);
-                body_set_velocity(t1, vel);
-                set_rotation(p1);
+                if (!body_is_collided(p1)) {
+                    vel = body_get_velocity(p1);
+                    vel.y = PLAYER_SPEED;
+                    body_set_velocity(p1, vel);
+                    body_set_velocity(t1, vel);
+                    set_rotation(p1);
+                }
                 break;
             case 115:
                 vel = body_get_velocity(p1);
@@ -262,6 +264,12 @@ void draw_walls(Scene *scene) {
 }
 
 void draw_boundaries(Scene *scene) {
+    Body *p1;
+    for (int i = 0; i < scene_bodies(scene); i++) {
+        if (get_nth_bodytype(scene, i) == ONE) {
+            p1 = scene_get_body(scene, i);
+        }
+    }
     for (size_t i = 0; i < 8; i++) {
         Body *b1 = rectangle_shape((Vector) {.x = WIDTH/2, .y = HEIGHT}, INFINITE_MASS,
             WIDTH, 20, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
@@ -271,6 +279,7 @@ void draw_boundaries(Scene *scene) {
             20, HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
         Body *b4 = rectangle_shape((Vector) {.x = WIDTH, .y = HEIGHT/2}, INFINITE_MASS,
             20, HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
+        create_physics_collision(scene, 0, p1, b1);
         scene_add_body(scene, b1);
         scene_add_body(scene, b2);
         scene_add_body(scene, b3);
@@ -325,9 +334,9 @@ Scene *create_game() {
     sdl_init(min, max);
     sdl_on_key(on_key, scene);
     draw_background(scene);
+    draw_tanks(scene);
     draw_boundaries(scene);
     draw_walls(scene);
-    draw_tanks(scene);
     return scene;
 }
 
