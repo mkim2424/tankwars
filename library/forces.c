@@ -12,6 +12,7 @@ typedef struct {
     List *bodies;
     void *aux_val;
     CollisionHandler handler;
+    bool collided_before;
 } collision_info;
 
 
@@ -107,6 +108,16 @@ void destruction_creator(force_info *aux) {
     List *shape2 = body_get_shape(body2);
 
     if (find_collision(shape1, shape2).collided) {
+        Body_info *body1_info = body_get_info(body1);
+        Body_info *body2_info = body_get_info(body2);
+        if ((*body1_info).b == ONE || (*body1_info).b == TWO) {
+            system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/explosion.wav");
+        }
+
+        if ((*body2_info).b == ONE || (*body2_info).b == TWO) {
+            system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/explosion.wav");
+        }
+
         body_remove(body1);
         body_remove(body2);
     }
@@ -170,16 +181,36 @@ void collision_creator(collision_info *aux) {
 
     CollisionInfo collision = find_collision(shape1, shape2);
     if (collision.collided) {
-        if (!body_is_collided(body1) && !body_is_collided(body2)) {
-            body_collided(body1, true);
-            body_collided(body2, true);
+        if (!aux->collided_before) {
+
+            // take care of three bullet rule
+            Body_info *body1_info = body_get_info(body1);
+            Body_info *body2_info = body_get_info(body2);
+            if ((*body1_info).b == BULLET1 || (*body1_info).b == BULLET2) {
+                if (get_num_collided(body1) >= 3) {
+                    body_remove(body1);
+                }
+
+                else {
+                    increment_num_collided(body1);
+                }
+            } 
+            if ((*body2_info).b == BULLET1 || (*body2_info).b == BULLET2) {
+                if (get_num_collided(body2) >= 3) {
+                    body_remove(body2);
+                }
+
+                else {
+                    increment_num_collided(body2);
+                }
+            } 
+            aux->collided_before = true;
             aux->handler(body1, body2, collision.axis, aux->aux_val);
         }
     }
 
     else {
-        body_collided(body1, false);
-        body_collided(body2, false);
+        aux->collided_before = false;
     }
 
 }
@@ -194,6 +225,7 @@ void create_collision(Scene *scene, Body *body1, Body *body2, CollisionHandler
     aux1->bodies = bodies;
     aux1->aux_val = aux;
     aux1->handler = handler;
+    aux1->collided_before = false;
 
     scene_add_bodies_force_creator(scene, (ForceCreator) collision_creator,
         aux1, bodies, freer);

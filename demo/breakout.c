@@ -22,7 +22,7 @@
 #define PLAYER_WIDTH 200
 #define BALL_RADIUS 10
 #define BALL_MASS 10
-#define INFINITE_MASS 10000000
+#define INFINITE_MASS INFINITY
 
 const Vector min = {.x = 0, .y = 0};
 const Vector max = {.x = WIDTH, .y = HEIGHT};
@@ -142,7 +142,7 @@ Scene *create_game() {
     sdl_on_key(on_key, scene);
     Body *ball = n_polygon_shape(BALL_NUM_SIDES, BALL_RADIUS, BALL_MASS, 
         (RGBColor) {.r = 1, .g = 0, .b = 0},
-    (Vector) {.x = WIDTH/2, .y = 2 * PLAYER_HEIGHT });
+    (Vector) {.x = WIDTH/2, .y = 2 * PLAYER_HEIGHT }, BALL);
     body_set_velocity(ball, ball_velocity);
     scene_add_body(scene, ball);
     draw_background(scene, ball);

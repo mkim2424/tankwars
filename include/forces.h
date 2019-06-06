@@ -4,9 +4,12 @@
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "scene.h"
 #include "collision.h"
+#include "body.h"
+#include "shapes.h"
 
 
 /**

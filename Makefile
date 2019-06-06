@@ -16,7 +16,8 @@ LIB_MATH = -lm
 LIBS = $(LIB_MATH) -lSDL2 -lSDL2_gfx
 
 # List of demo programs
-DEMOS = tankwars
+DEMOS = tankwars breakout test
+
 # List of C files in "libraries" that we provide
 STAFF_LIBS = test_util sdl_wrapper
 # List of C files in "libraries" that you will write

@@ -14,6 +14,8 @@ struct body {
     bool is_removed;
     bool is_collided;
     double rate;
+    int num_collided;
+    // int num_shot_bullets;
 };
 
 Body *body_init(List *shape, double mass, RGBColor color) {
@@ -46,6 +48,8 @@ Body *body_init_with_info(List *shape, double mass, RGBColor color, void *info,
     res->is_removed = false;
     res->is_collided = false;
     res->rate = 0.0;
+    res->num_collided = 0;
+    // res->num_shot_bullets = 0;
     return res;
 }
 
@@ -185,3 +189,20 @@ bool body_is_collided(Body *body) {
     assert(body != NULL);
     return body->is_collided;
 }
+
+int get_num_collided(Body *body) {
+    return body->num_collided;
+}
+
+void increment_num_collided(Body *body) {
+    body->num_collided += 1;
+}
+
+// int get_num_shot_bullets(Body *body) {
+//     return body->num_shot_bullets;
+// }
+
+// void increment_num_shot_bullets(Body *body) {
+//     body->num_shot_bullets += 1;
+// }
+
