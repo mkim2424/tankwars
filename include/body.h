@@ -93,6 +93,8 @@ double body_get_mass(Body *body);
  */
 RGBColor body_get_color(Body *body);
 
+void body_set_color(Body *body, RGBColor color);
+
 /**
  * Gets the information associated with a body.
  *

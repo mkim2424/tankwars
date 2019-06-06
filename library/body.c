@@ -100,6 +100,10 @@ RGBColor body_get_color(Body *body) {
     return body->color;
 }
 
+void body_set_color(Body *body, RGBColor color) {
+    body->color = color;
+}
+
 void *body_get_info(Body *body) {
     assert(body != NULL);
     return body->info;

@@ -203,7 +203,35 @@ void collision_creator(collision_info *aux) {
                 else {
                     increment_num_collided(body2);
                 }
-            } 
+            }
+
+            // take care of WALL_BREAK only withholding 3 hits
+            if ((*body1_info).b == WALL_BREAK && ((*body2_info).b == BULLET1 || (*body2_info).b == BULLET2)) {
+                if (get_num_collided(body1) >= 2) {
+                    body_remove(body1);
+                }
+
+                else {
+                    increment_num_collided(body1);
+                    RGBColor color = body_get_color(body1);
+                    RGBColor new_color = {.r = color.r, .g = color.g + 0.1, .b = color.b};
+                    body_set_color(body1, new_color);
+                }
+            }
+
+            if ((*body2_info).b == WALL_BREAK && ((*body1_info).b == BULLET1 || (*body1_info).b == BULLET2)) {
+                if (get_num_collided(body2) >= 2) {
+                    body_remove(body2);
+                }
+
+                else {
+                    increment_num_collided(body2);
+                    RGBColor color = body_get_color(body2);
+                    RGBColor new_color = {.r = color.r, .g = color.g + 0.1, .b = color.b};
+                    body_set_color(body2, new_color);
+                }
+            }
+
             aux->collided_before = true;
             aux->handler(body1, body2, collision.axis, aux->aux_val);
         }

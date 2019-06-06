@@ -18,6 +18,7 @@ typedef enum {
     TURRET_ONE,
     TURRET_TWO,
     WALL,
+    WALL_BREAK,
     BULLET1,
     BULLET2
 } BodyType;

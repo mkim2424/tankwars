@@ -16,7 +16,7 @@
 #define TANK_HEIGHT 125
 #define TURRET_WIDTH 200
 #define TURRET_HEIGHT 30
-#define WALL_LENGTH 250
+#define WALL_LENGTH 150
 #define PLAYER_SPEED 1500
 #define ROWS 3
 #define COLUMNS 10
@@ -39,6 +39,7 @@ const RGBColor turret1_color = {.r = 0, .g = 0, .b = .6};
 const RGBColor tank2_color = {.r = 1, .g = 0, .b = 0};
 const RGBColor turret2_color = {.r = .6, .g = 0, .b = 0};
 const RGBColor wall_color = {.r = .52, .g = .52, .b = .52};
+const RGBColor wall_break_color = {.r = 1, .g = .5, .b = 0};
 const RGBColor shrub_color = {.r = 0, .g = 0.7, .b = 0.3};
 
 /*
@@ -77,7 +78,7 @@ void shoot_bullet1(Scene *scene, Body *tank1, Body *tank2, Body *turret) {
     body_set_velocity(bullet, (Vector) {.x = cos(angle) * BULLET_VELOCITY, .y = sin(angle) * BULLET_VELOCITY});
     // create physics collision between bullet and walls
     for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == WALL) {
+        if (get_nth_bodytype(scene, i) == WALL || get_nth_bodytype(scene, i) == WALL_BREAK) {
             Body *wall = scene_get_body(scene, i);
             create_physics_collision(scene, 0.95, wall, bullet);
         }
@@ -96,7 +97,7 @@ void shoot_bullet2(Scene *scene, Body *tank2, Body *tank1, Body *turret) {
     body_set_velocity(bullet, (Vector) {.x = cos(angle) * -BULLET_VELOCITY, .y = sin(angle) * -BULLET_VELOCITY});
     // create physics collision between bullet and walls
     for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == WALL) {
+        if (get_nth_bodytype(scene, i) == WALL || get_nth_bodytype(scene, i) == WALL_BREAK) {
             Body *wall = scene_get_body(scene, i);
             create_physics_collision(scene, 0.95, wall, bullet);
         }
@@ -152,40 +153,46 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
     if (type == KEY_PRESSED) {
         switch (key) {
             case 119:
-                if (!body_is_collided(p1)) {
+
+                if (p1 != NULL) {
                     vel = body_get_velocity(p1);
                     vel.y = PLAYER_SPEED;
                     body_set_velocity(p1, vel);
                     body_set_velocity(t1, vel);
                     set_rotation(p1);
-
                 }
+
                 break;
             case 115:
-                
-                vel = body_get_velocity(p1);
-                vel.y = -PLAYER_SPEED;
-                body_set_velocity(p1, vel);
-                body_set_velocity(t1, vel);
-                set_rotation(p1);
+                if (p1 != NULL) {
+                    vel = body_get_velocity(p1);
+                    vel.y = -PLAYER_SPEED;
+                    body_set_velocity(p1, vel);
+                    body_set_velocity(t1, vel);
+                    set_rotation(p1);
+                }
                 
                 break;
             case 100:
-                
-                vel = body_get_velocity(p1);
-                vel.x = PLAYER_SPEED;
-                body_set_velocity(p1, vel);
-                body_set_velocity(t1, vel);
-                set_rotation(p1);
-                
+                if (p1 != NULL) {
+                    vel = body_get_velocity(p1);
+                    vel.x = PLAYER_SPEED;
+                    body_set_velocity(p1, vel);
+                    body_set_velocity(t1, vel);
+                    set_rotation(p1);
+
+                }
+
                 break;
             case 97:
-                
-                vel = body_get_velocity(p1);
-                vel.x = -PLAYER_SPEED;
-                body_set_velocity(p1, vel);
-                body_set_velocity(t1, vel);
-                set_rotation(p1);
+                if (p1 != NULL) {
+                    vel = body_get_velocity(p1);
+                    vel.x = -PLAYER_SPEED;
+                    body_set_velocity(p1, vel);
+                    body_set_velocity(t1, vel);
+                    set_rotation(p1);
+
+                }
                  
                 break;
             case 114:
@@ -201,28 +208,44 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                 // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/quick2.wav");
                 break;
             case UP_ARROW:
-                vel = body_get_velocity(p2);
-                vel.y = PLAYER_SPEED;
-                body_set_velocity(p2, vel);
-                set_rotation(p2);
+                if (p2 != NULL) {
+                    vel = body_get_velocity(p2);
+                    vel.y = PLAYER_SPEED;
+                    body_set_velocity(p2, vel);
+                    set_rotation(p2);
+
+                }
+    
                 break;
             case DOWN_ARROW:
-                vel = body_get_velocity(p2);
-                vel.y = -PLAYER_SPEED;
-                body_set_velocity(p2, vel);
-                set_rotation(p2);
+                if (p2 != NULL) {
+                    vel = body_get_velocity(p2);
+                    vel.y = -PLAYER_SPEED;
+                    body_set_velocity(p2, vel);
+                    set_rotation(p2);
+                    
+                }
+
                 break;
             case RIGHT_ARROW:
-                vel = body_get_velocity(p2);
-                vel.x = PLAYER_SPEED;
-                body_set_velocity(p2, vel);
-                set_rotation(p2);
+                if (p2 != NULL) {
+                    vel = body_get_velocity(p2);
+                    vel.x = PLAYER_SPEED;
+                    body_set_velocity(p2, vel);
+                    set_rotation(p2);
+                    
+                }
+
                 break;
             case LEFT_ARROW:
-                vel = body_get_velocity(p2);
-                vel.x = -PLAYER_SPEED;
-                body_set_velocity(p2, vel);
-                set_rotation(p2);
+                if (p2 != NULL) {
+                    vel = body_get_velocity(p2);
+                    vel.x = -PLAYER_SPEED;
+                    body_set_velocity(p2, vel);
+                    set_rotation(p2);
+                    
+                }
+    
                 break;
             case 110:
                 body_set_rate(t2, 3);
@@ -239,33 +262,48 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
         switch (key) {
             case 119:
             case 115:
-                vel = body_get_velocity(p1);
-                vel.y = 0;
-                body_set_velocity(p1, vel);
-                body_set_velocity(t1, vel);
-                set_rotation(p1);
+                if (p1 != NULL) {
+                    vel = body_get_velocity(p1);
+                    vel.y = 0;
+                    body_set_velocity(p1, vel);
+                    body_set_velocity(t1, vel);
+                    set_rotation(p1);
+
+                }
+            
                 break;
             case 100:
             case 97:
-                vel = body_get_velocity(p1);
-                vel.x = 0;
-                body_set_velocity(p1, vel);
-                body_set_velocity(t1, vel);
-                set_rotation(p1);
+                if (p1 != NULL) {
+                    vel = body_get_velocity(p1);
+                    vel.x = 0;
+                    body_set_velocity(p1, vel);
+                    body_set_velocity(t1, vel);
+                    set_rotation(p1);
+
+                }
+                
                 break;
             case UP_ARROW:
             case DOWN_ARROW:
-                vel = body_get_velocity(p2);
-                vel.y = 0;
-                body_set_velocity(p2, vel);
-                set_rotation(p2);
+                if (p2 != NULL) {
+                    vel = body_get_velocity(p2);
+                    vel.y = 0;
+                    body_set_velocity(p2, vel);
+                    set_rotation(p2);
+
+                }
+            
                 break;
             case RIGHT_ARROW:
             case LEFT_ARROW:
-                vel = body_get_velocity(p2);
-                vel.x = 0;
-                body_set_velocity(p2, vel);
-                set_rotation(p2);
+                if (p2 != NULL) {
+                    vel = body_get_velocity(p2);
+                    vel.x = 0;
+                    body_set_velocity(p2, vel);
+                    set_rotation(p2);
+                }
+        
                 break;
             case 114:
             case 116:
@@ -315,19 +353,43 @@ void draw_background(Scene *scene) {
 // Draw the terrain walls
 void draw_walls(Scene *scene) {
 
-    // draw middle wall
-    double offset = 400;
-    Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = HEIGHT / 2}, INFINITE_MASS,
-            WALL_LENGTH, HEIGHT - 2 * offset, wall_color, WALL);
-    scene_add_body(scene, b1);
+    //draw middle wall
+    // double offset = 400;
+    // Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = HEIGHT / 2}, INFINITE_MASS,
+    //         WALL_LENGTH, HEIGHT - 2 * offset, wall_color, WALL);
+    // scene_add_body(scene, b1);
+
+    RGBColor wall_c;
+    BodyType wall_type;
+    for (size_t i = 0; i < 8; i++) {
+        if (i % 2 == 0) {
+            wall_c = wall_color;
+            wall_type = WALL;
+        }
+
+        else {
+            wall_c = wall_break_color;
+            wall_type = WALL_BREAK;
+        }
+        Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = (HEIGHT / 2) - (3.5 * WALL_LENGTH) + (i * (WALL_LENGTH + 10))}, INFINITE_MASS,
+            WALL_LENGTH, WALL_LENGTH, wall_c, wall_type);
+        scene_add_body(scene, b1);
+    }
+
 
     // draw shrubs
     Body *shrub = rectangle_shape((Vector) {.x = 3250, .y = 1600}, INFINITE_MASS,
-            WALL_LENGTH, WALL_LENGTH, shrub_color, WALL);
-    Body *shrub1 = rectangle_shape((Vector) {.x = 700, .y = 400}, INFINITE_MASS,
-            WALL_LENGTH, WALL_LENGTH, shrub_color, WALL);
+            WALL_LENGTH * 2, WALL_LENGTH * 2, shrub_color, WALL);
+    Body *shrub1 = rectangle_shape((Vector) {.x = 3250, .y = 400}, INFINITE_MASS,
+            WALL_LENGTH * 2, WALL_LENGTH * 2, shrub_color, WALL);
+    Body *shrub2 = rectangle_shape((Vector) {.x = 700, .y = 1600}, INFINITE_MASS,
+            WALL_LENGTH * 2, WALL_LENGTH * 2, shrub_color, WALL);
+    Body *shrub3 = rectangle_shape((Vector) {.x = 700, .y = 400}, INFINITE_MASS,
+            WALL_LENGTH * 2, WALL_LENGTH * 2, shrub_color, WALL);
     scene_add_body(scene, shrub);
     scene_add_body(scene, shrub1);
+    scene_add_body(scene, shrub2);
+    scene_add_body(scene, shrub3);
 }
 
 void draw_boundaries(Scene *scene) {
@@ -365,10 +427,10 @@ void draw_tanks(Scene *scene) {
 
     // create physics collisions between walls and tanks
     for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == WALL) {
+        if (get_nth_bodytype(scene, i) == WALL || get_nth_bodytype(scene, i) == WALL_BREAK) {
             Body *w = scene_get_body(scene, i);
-            create_physics_collision(scene, 0.5, tank1, w);
-            create_physics_collision(scene, 0.5, tank2, w);
+            create_physics_collision(scene, 0.4, tank1, w);
+            create_physics_collision(scene, 0.4, tank2, w);
         }
     }
 
