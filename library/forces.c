@@ -111,11 +111,11 @@ void destruction_creator(force_info *aux) {
         Body_info *body1_info = body_get_info(body1);
         Body_info *body2_info = body_get_info(body2);
         if ((*body1_info).b == ONE || (*body1_info).b == TWO) {
-            system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/explosion.wav");
+            // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/explosion.wav");
         }
 
         if ((*body2_info).b == ONE || (*body2_info).b == TWO) {
-            system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/explosion.wav");
+            // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/explosion.wav");
         }
 
         body_remove(body1);
@@ -214,7 +214,7 @@ void collision_creator(collision_info *aux) {
                 else {
                     increment_num_collided(body1);
                     RGBColor color = body_get_color(body1);
-                    RGBColor new_color = {.r = color.r, .g = color.g + 0.1, .b = color.b};
+                    RGBColor new_color = {.r = color.r, .g = color.g + 0.15, .b = color.b};
                     body_set_color(body1, new_color);
                 }
             }
@@ -227,7 +227,7 @@ void collision_creator(collision_info *aux) {
                 else {
                     increment_num_collided(body2);
                     RGBColor color = body_get_color(body2);
-                    RGBColor new_color = {.r = color.r, .g = color.g + 0.1, .b = color.b};
+                    RGBColor new_color = {.r = color.r, .g = color.g + 0.15, .b = color.b};
                     body_set_color(body2, new_color);
                 }
             }

@@ -17,7 +17,7 @@
 #define TURRET_WIDTH 200
 #define TURRET_HEIGHT 30
 #define WALL_LENGTH 150
-#define PLAYER_SPEED 1500
+#define PLAYER_SPEED 1000
 #define ROWS 3
 #define COLUMNS 10
 #define OFFSET 10
@@ -28,7 +28,7 @@
 #define VERTICAL_OFFSET 10
 #define PLAYER_HEIGHT 50
 #define PLAYER_WIDTH 200
-#define BULLET_VELOCITY 3000
+#define BULLET_VELOCITY 1500
 #define INFINITE_MASS INFINITY
 
 const Vector min = {.x = 0, .y = 0};
@@ -39,7 +39,7 @@ const RGBColor turret1_color = {.r = 0, .g = 0, .b = .6};
 const RGBColor tank2_color = {.r = 1, .g = 0, .b = 0};
 const RGBColor turret2_color = {.r = .6, .g = 0, .b = 0};
 const RGBColor wall_color = {.r = .52, .g = .52, .b = .52};
-const RGBColor wall_break_color = {.r = 1, .g = .5, .b = 0};
+const RGBColor wall_break_color = {.r = 1, .g = .35, .b = 0};
 const RGBColor shrub_color = {.r = 0, .g = 0.7, .b = 0.3};
 
 /*
