@@ -108,6 +108,27 @@ void shoot_bullet2(Scene *scene, Body *tank2, Body *tank1, Body *turret) {
     scene_add_body(scene, bullet);
 }
 
+int count_bullet1(Scene *scene) {
+    int count = 0;
+    for (int i = 0; i < scene_bodies(scene); i++) {
+        if (get_nth_bodytype(scene, i) == BULLET1) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+int count_bullet2(Scene *scene) {
+    int count = 0;
+    for (int i = 0; i < scene_bodies(scene); i++) {
+        if (get_nth_bodytype(scene, i) == BULLET2) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+
 // Movement and actions for different keys
 void on_key(char key, KeyEventType type, double held_time, void *aux) {
     Scene *scene = (Scene *) aux;
@@ -174,7 +195,9 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                 body_set_rate(t1, -3);
                 break;
             case 121:
-                shoot_bullet1(scene, p1, p2, t1);
+                if (count_bullet1(scene) < 5) {
+                    shoot_bullet1(scene, p1, p2, t1);
+                }
                 // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/quick2.wav");
                 break;
             case UP_ARROW:
@@ -208,7 +231,9 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                 body_set_rate(t2, -3);
                 break;
             case ' ':
-                shoot_bullet2(scene, p2, p1, t2);
+                if (count_bullet2(scene) < 5) {
+                    shoot_bullet2(scene, p2, p1, t2);
+                }
         }
     } else if (type == KEY_RELEASED) {
         switch (key) {
@@ -405,7 +430,7 @@ bool game_over(Scene *scene) {
 // Start the game and return all scene components
 Scene *create_game() {
     Scene *scene = scene_init();
-    // system("playsound & /Users/matthewkim/Desktop/CS03/tankwars/sounds/background.wav");
+    // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/background.wav");
     sdl_init(min, max);
     sdl_on_key(on_key, scene);
     draw_background(scene);
