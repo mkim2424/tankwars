@@ -552,7 +552,7 @@ int main(int argc, char *argv[]) {
     Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 );
     music = Mix_LoadMUS("sounds/background.wav");
     shoot = Mix_LoadWAV("sounds/quick2.wav");
-    boom = Mix_LoadWAV("sounds/explosion.wav");
+    boom = Mix_LoadWAV("sounds/Explosion+3.wav");
     Mix_PlayMusic( music, -1 );
     double dt;
     Scene *scene = create_game();
