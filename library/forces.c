@@ -108,16 +108,6 @@ void destruction_creator(force_info *aux) {
     List *shape2 = body_get_shape(body2);
 
     if (find_collision(shape1, shape2).collided) {
-        Body_info *body1_info = body_get_info(body1);
-        Body_info *body2_info = body_get_info(body2);
-        if ((*body1_info).b == ONE || (*body1_info).b == TWO) {
-            // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/explosion.wav");
-        }
-
-        if ((*body2_info).b == ONE || (*body2_info).b == TWO) {
-            // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/explosion.wav");
-        }
-
         body_remove(body1);
         body_remove(body2);
     }

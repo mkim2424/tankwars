@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <SDL2/SDL_Mixer.h>
 #include "forces.h"
 #include "scene.h"
 #include "sdl_wrapper.h"
@@ -43,6 +44,10 @@ const RGBColor wall_color = {.r = .52, .g = .52, .b = .52};
 const RGBColor wall_break_color = {.r = 1, .g = .35, .b = 0};
 const RGBColor shrub_color = {.r = 0, .g = 0.7, .b = 0.3};
 
+
+Mix_Music *music = NULL;
+Mix_Chunk *shoot = NULL;
+Mix_Chunk *boom = NULL;
 /*
  * Helper function to get the nth bodytype in a scene.
  *
@@ -204,16 +209,17 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
 
                     break;
                 case 114:
-                    body_set_rate(t1, 3);
+                    body_set_rate(t1, 2);
                     break;
                 case 116:
-                    body_set_rate(t1, -3);
+                    body_set_rate(t1, -2);
                     break;
                 case 121:
                     if (count_bullet1(scene) < 5) {
+                        Mix_PlayChannel( -1, shoot, 0 );
                         shoot_bullet1(scene, p1, p2, t1);
                     }
-                    // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/quick2.wav");
+                    // printf("\a\n");
                     break;
                 case UP_ARROW:
                     if (p2 != NULL) {
@@ -256,13 +262,14 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
 
                     break;
                 case 110:
-                    body_set_rate(t2, 3);
+                    body_set_rate(t2, 2);
                     break;
                 case 109:
-                    body_set_rate(t2, -3);
+                    body_set_rate(t2, -2);
                     break;
                 case ' ':
                     if (count_bullet2(scene) < 5) {
+                        Mix_PlayChannel( -1, shoot, 0 );
                         shoot_bullet2(scene, p2, p1, t2);
                     }
             }
@@ -362,12 +369,6 @@ void draw_background(Scene *scene) {
 
 // Draw the terrain walls
 void draw_walls(Scene *scene) {
-
-    //draw middle wall
-    // double offset = 400;
-    // Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = HEIGHT / 2}, INFINITE_MASS,
-    //         WALL_LENGTH, HEIGHT - 2 * offset, wall_color, WALL);
-    // scene_add_body(scene, b1);
 
     RGBColor wall_c;
     BodyType wall_type;
@@ -488,10 +489,12 @@ bool game_over(Scene *scene) {
     }
 
     if (tank1_alive == false) {
+        Mix_PlayChannel( -1, boom, 0 );
         printf("Red Tank wins!\n");
     }
 
     if (tank2_alive == false) {
+        Mix_PlayChannel( -1, boom, 0 );
         printf("Blue Tank wins!\n");
     }
 
@@ -542,11 +545,15 @@ void delay(int number_of_seconds)
     clock_t start_time = clock();
 
     // looping till required time is not acheived
-    while (clock() < start_time + milli_seconds)
-        ;
+    while (clock() < start_time + milli_seconds);
 }
 
 int main(int argc, char *argv[]) {
+    Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 );
+    music = Mix_LoadMUS("sounds/background.wav");
+    shoot = Mix_LoadWAV("sounds/quick2.wav");
+    boom = Mix_LoadWAV("sounds/explosion.wav");
+    Mix_PlayMusic( music, -1 );
     double dt;
     Scene *scene = create_game();
     //system("eog ../images/explosions.png");
@@ -560,5 +567,9 @@ int main(int argc, char *argv[]) {
             restart_game(scene);
         }
     }
+
+    Mix_FreeMusic(music);
+    Mix_FreeChunk(shoot);
+    Mix_FreeChunk(boom);
     return 0;
 }

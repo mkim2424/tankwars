@@ -1,5 +1,4 @@
 #include "scene.h"
-#include "shapes.h"
 
 #define INIT_SIZE 10
 

@@ -4,9 +4,11 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "body.h"
 #include "list.h"
+#include "shapes.h"
 
 /**
  * A collection of bodies and force creators.
