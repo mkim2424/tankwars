@@ -553,7 +553,7 @@ int main(int argc, char *argv[]) {
     music = Mix_LoadMUS("sounds/background.wav");
     shoot = Mix_LoadWAV("sounds/quick2.wav");
     boom = Mix_LoadWAV("sounds/Explosion+3.wav");
-    Mix_PlayMusic( music, -1 );
+    Mix_PlayMusic(music, -1);
     double dt;
     Scene *scene = create_game();
     //system("eog ../images/explosions.png");
