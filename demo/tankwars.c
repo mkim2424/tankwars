@@ -8,6 +8,7 @@
 #include "shapes.h"
 #include "color.h"
 #include "body.h"
+#include <time.h>
 
 #define WIDTH 4000
 #define HEIGHT 2000
@@ -135,6 +136,13 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
     Scene *scene = (Scene *) aux;
     Body *p1, *p2, *t1, *t2;
     Vector vel;
+    bool counter = true;
+
+    for (int i = 0; i < scene_bodies(scene); i++) {
+        if (get_nth_bodytype(scene, i) == EXPLOSION) {
+            counter = false;
+        }
+    }
 
     for (int i = 0; i < scene_bodies(scene); i++) {
         if (get_nth_bodytype(scene, i) == ONE) {
@@ -150,171 +158,173 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
             t2 = scene_get_body(scene, i);
         }
     }
-    if (type == KEY_PRESSED) {
-        switch (key) {
-            case 119:
+    if (counter) {
+        if (type == KEY_PRESSED) {
+            switch (key) {
+                case 119:
 
-                if (p1 != NULL) {
-                    vel = body_get_velocity(p1);
-                    vel.y = PLAYER_SPEED;
-                    body_set_velocity(p1, vel);
-                    body_set_velocity(t1, vel);
-                    set_rotation(p1);
-                }
+                    if (p1 != NULL) {
+                        vel = body_get_velocity(p1);
+                        vel.y = PLAYER_SPEED;
+                        body_set_velocity(p1, vel);
+                        body_set_velocity(t1, vel);
+                        set_rotation(p1);
+                    }
+                    break;
+                case 115:
+                    if (p1 != NULL) {
+                        vel = body_get_velocity(p1);
+                        vel.y = -PLAYER_SPEED;
+                        body_set_velocity(p1, vel);
+                        body_set_velocity(t1, vel);
+                        set_rotation(p1);
+                    }
 
-                break;
-            case 115:
-                if (p1 != NULL) {
-                    vel = body_get_velocity(p1);
-                    vel.y = -PLAYER_SPEED;
-                    body_set_velocity(p1, vel);
-                    body_set_velocity(t1, vel);
-                    set_rotation(p1);
-                }
-                
-                break;
-            case 100:
-                if (p1 != NULL) {
-                    vel = body_get_velocity(p1);
-                    vel.x = PLAYER_SPEED;
-                    body_set_velocity(p1, vel);
-                    body_set_velocity(t1, vel);
-                    set_rotation(p1);
+                    break;
+                case 100:
+                    if (p1 != NULL) {
+                        vel = body_get_velocity(p1);
+                        vel.x = PLAYER_SPEED;
+                        body_set_velocity(p1, vel);
+                        body_set_velocity(t1, vel);
+                        set_rotation(p1);
 
-                }
+                    }
 
-                break;
-            case 97:
-                if (p1 != NULL) {
-                    vel = body_get_velocity(p1);
-                    vel.x = -PLAYER_SPEED;
-                    body_set_velocity(p1, vel);
-                    body_set_velocity(t1, vel);
-                    set_rotation(p1);
+                    break;
+                case 97:
+                    if (p1 != NULL) {
+                        vel = body_get_velocity(p1);
+                        vel.x = -PLAYER_SPEED;
+                        body_set_velocity(p1, vel);
+                        body_set_velocity(t1, vel);
+                        set_rotation(p1);
 
-                }
-                 
-                break;
-            case 114:
-                body_set_rate(t1, 3);
-                break;
-            case 116:
-                body_set_rate(t1, -3);
-                break;
-            case 121:
-                if (count_bullet1(scene) < 5) {
-                    shoot_bullet1(scene, p1, p2, t1);
-                }
-                // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/quick2.wav");
-                break;
-            case UP_ARROW:
-                if (p2 != NULL) {
-                    vel = body_get_velocity(p2);
-                    vel.y = PLAYER_SPEED;
-                    body_set_velocity(p2, vel);
-                    set_rotation(p2);
+                    }
 
-                }
-    
-                break;
-            case DOWN_ARROW:
-                if (p2 != NULL) {
-                    vel = body_get_velocity(p2);
-                    vel.y = -PLAYER_SPEED;
-                    body_set_velocity(p2, vel);
-                    set_rotation(p2);
-                    
-                }
+                    break;
+                case 114:
+                    body_set_rate(t1, 3);
+                    break;
+                case 116:
+                    body_set_rate(t1, -3);
+                    break;
+                case 121:
+                    if (count_bullet1(scene) < 5) {
+                        shoot_bullet1(scene, p1, p2, t1);
+                    }
+                    // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/quick2.wav");
+                    break;
+                case UP_ARROW:
+                    if (p2 != NULL) {
+                        vel = body_get_velocity(p2);
+                        vel.y = PLAYER_SPEED;
+                        body_set_velocity(p2, vel);
+                        set_rotation(p2);
 
-                break;
-            case RIGHT_ARROW:
-                if (p2 != NULL) {
-                    vel = body_get_velocity(p2);
-                    vel.x = PLAYER_SPEED;
-                    body_set_velocity(p2, vel);
-                    set_rotation(p2);
-                    
-                }
+                    }
 
-                break;
-            case LEFT_ARROW:
-                if (p2 != NULL) {
-                    vel = body_get_velocity(p2);
-                    vel.x = -PLAYER_SPEED;
-                    body_set_velocity(p2, vel);
-                    set_rotation(p2);
-                    
-                }
-    
-                break;
-            case 110:
-                body_set_rate(t2, 3);
-                break;
-            case 109:
-                body_set_rate(t2, -3);
-                break;
-            case ' ':
-                if (count_bullet2(scene) < 5) {
-                    shoot_bullet2(scene, p2, p1, t2);
-                }
-        }
-    } else if (type == KEY_RELEASED) {
-        switch (key) {
-            case 119:
-            case 115:
-                if (p1 != NULL) {
-                    vel = body_get_velocity(p1);
-                    vel.y = 0;
-                    body_set_velocity(p1, vel);
-                    body_set_velocity(t1, vel);
-                    set_rotation(p1);
+                    break;
+                case DOWN_ARROW:
+                    if (p2 != NULL) {
+                        vel = body_get_velocity(p2);
+                        vel.y = -PLAYER_SPEED;
+                        body_set_velocity(p2, vel);
+                        set_rotation(p2);
 
-                }
-            
-                break;
-            case 100:
-            case 97:
-                if (p1 != NULL) {
-                    vel = body_get_velocity(p1);
-                    vel.x = 0;
-                    body_set_velocity(p1, vel);
-                    body_set_velocity(t1, vel);
-                    set_rotation(p1);
+                    }
 
-                }
-                
-                break;
-            case UP_ARROW:
-            case DOWN_ARROW:
-                if (p2 != NULL) {
-                    vel = body_get_velocity(p2);
-                    vel.y = 0;
-                    body_set_velocity(p2, vel);
-                    set_rotation(p2);
+                    break;
+                case RIGHT_ARROW:
+                    if (p2 != NULL) {
+                        vel = body_get_velocity(p2);
+                        vel.x = PLAYER_SPEED;
+                        body_set_velocity(p2, vel);
+                        set_rotation(p2);
 
-                }
-            
-                break;
-            case RIGHT_ARROW:
-            case LEFT_ARROW:
-                if (p2 != NULL) {
-                    vel = body_get_velocity(p2);
-                    vel.x = 0;
-                    body_set_velocity(p2, vel);
-                    set_rotation(p2);
-                }
-        
-                break;
-            case 114:
-            case 116:
-                body_set_rate(t1, 0);
-                break;
-            case 110:
-            case 109:
-                body_set_rate(t2, 0);
-                break;
+                    }
+
+                    break;
+                case LEFT_ARROW:
+                    if (p2 != NULL) {
+                        vel = body_get_velocity(p2);
+                        vel.x = -PLAYER_SPEED;
+                        body_set_velocity(p2, vel);
+                        set_rotation(p2);
+
+                    }
+
+                    break;
+                case 110:
+                    body_set_rate(t2, 3);
+                    break;
+                case 109:
+                    body_set_rate(t2, -3);
+                    break;
+                case ' ':
+                    if (count_bullet2(scene) < 5) {
+                        shoot_bullet2(scene, p2, p1, t2);
+                    }
+            }
+        } else if (type == KEY_RELEASED) {
+            switch (key) {
+                case 119:
+                case 115:
+                    if (p1 != NULL) {
+                        vel = body_get_velocity(p1);
+                        vel.y = 0;
+                        body_set_velocity(p1, vel);
+                        body_set_velocity(t1, vel);
+                        set_rotation(p1);
+
+                    }
+
+                    break;
+                case 100:
+                case 97:
+                    if (p1 != NULL) {
+                        vel = body_get_velocity(p1);
+                        vel.x = 0;
+                        body_set_velocity(p1, vel);
+                        body_set_velocity(t1, vel);
+                        set_rotation(p1);
+
+                    }
+
+                    break;
+                case UP_ARROW:
+                case DOWN_ARROW:
+                    if (p2 != NULL) {
+                        vel = body_get_velocity(p2);
+                        vel.y = 0;
+                        body_set_velocity(p2, vel);
+                        set_rotation(p2);
+
+                    }
+
+                    break;
+                case RIGHT_ARROW:
+                case LEFT_ARROW:
+                    if (p2 != NULL) {
+                        vel = body_get_velocity(p2);
+                        vel.x = 0;
+                        body_set_velocity(p2, vel);
+                        set_rotation(p2);
+                    }
+
+                    break;
+                case 114:
+                case 116:
+                    body_set_rate(t1, 0);
+                    break;
+                case 110:
+                case 109:
+                    body_set_rate(t2, 0);
+                    break;
+            }
         }
     }
+
 }
 
 // Checks if player has crossed any boundaries
@@ -405,7 +415,7 @@ void draw_boundaries(Scene *scene) {
     scene_add_body(scene, b2);
     scene_add_body(scene, b3);
     scene_add_body(scene, b4);
-    
+
 
 }
 
@@ -489,6 +499,15 @@ bool game_over(Scene *scene) {
 
 }
 
+bool check_explosion(Scene *scene) {
+    for (int i = 0; i < scene_bodies(scene); i++) {
+        if (get_nth_bodytype(scene, i) == EXPLOSION) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Start the game and return all scene components
 Scene *create_game() {
     Scene *scene = scene_init();
@@ -502,19 +521,44 @@ Scene *create_game() {
     return scene;
 }
 
+// Restart the game and return all scene components
+void restart_game(Scene *scene) {
+    for (size_t i = 0; i < scene_bodies(scene); i++) {
+        scene_remove_body(scene, i);
+    }
+    sdl_render_scene(scene);
+    draw_background(scene);
+    draw_boundaries(scene);
+    draw_walls(scene);
+    draw_tanks(scene);
+}
+
+void delay(int number_of_seconds)
+{
+    // Converting time into milli_seconds
+    int milli_seconds = 1000 * number_of_seconds;
+
+    // Stroing start time
+    clock_t start_time = clock();
+
+    // looping till required time is not acheived
+    while (clock() < start_time + milli_seconds)
+        ;
+}
+
 int main(int argc, char *argv[]) {
     double dt;
     Scene *scene = create_game();
-    // system("eog /Users/matthewkim/Desktop/CS03/pictures/explosions.png");
+    //system("eog ../images/explosions.png");
     while (!sdl_is_done()) {
         dt = time_since_last_tick();
-        if (game_over(scene)) {
-            // making the game again
-            break;
-        }
         update_turret(scene);
         scene_tick(scene, dt);
         sdl_render_scene(scene);
+        if (game_over(scene)) {
+            delay(1000);
+            restart_game(scene);
+        }
     }
     return 0;
 }

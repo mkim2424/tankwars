@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "shapes.h"
 
 #define INIT_SIZE 10
 
@@ -19,7 +20,7 @@ typedef struct {
 
 /**
  * @param bodies         a list of bodies in the scene.
- * @param force_creators a list of force_creator_info's. 
+ * @param force_creators a list of force_creator_info's.
  */
 struct scene {
     List *bodies;
@@ -43,7 +44,7 @@ void scene_free(Scene *scene) {
         if (tmp->freer != NULL && tmp->aux != NULL) {
             tmp->freer(tmp->aux);
         }
-        
+
     }
     list_free(scene->force_creators);
     free(scene);
@@ -103,9 +104,16 @@ void scene_add_bodies_force_creator(
     list_add(scene->force_creators, res);
 }
 
+
+BodyType get_bodytype(Scene *scene, size_t n) {
+    Body_info *tmp = body_get_info(scene_get_body(scene, n));
+    return (*tmp).b;
+}
+
 void scene_tick(Scene *scene, double dt) {
     assert(scene != NULL);
     size_t ind = 0;
+    bool explosion = false;
 
     while (ind < list_size(scene->force_creators)) {
         force_creator_info *tmp = list_get(scene->force_creators, ind);
@@ -150,10 +158,31 @@ void scene_tick(Scene *scene, double dt) {
 
     ind = 0;
 
+    for (int i = 0; i < scene_bodies(scene); i++) {
+        if (get_bodytype(scene, i) == EXPLOSION) {
+            explosion = true;
+        }
+    }
+
     while (ind < scene_bodies(scene)) {
         Body *body_tmp = scene_get_body(scene, ind);
 
         if (body_is_removed(body_tmp)) {
+            Body_info *body_i = body_get_info(body_tmp);
+            if (body_i->b == TWO && !explosion) {
+                for (size_t i = 0; i < 5; i++) {
+                    Body *b1 = star_shape(10-i, 200-20*i,
+                        100, (RGBColor) {.r = 1, .g = 1 - i*0.2, .b = 0}, body_get_centroid(body_tmp), EXPLOSION);
+                    scene_add_body(scene, b1);
+                }
+            }
+            else if (body_i->b == ONE && !explosion) {
+                for (size_t i = 0; i < 5; i++) {
+                    Body *b1 = star_shape(10-i, 200-20*i,
+                        100, (RGBColor) {.r = 1, .g = 1 - i*0.2, .b = 0}, body_get_centroid(body_tmp), EXPLOSION);
+                    scene_add_body(scene, b1);
+                }
+            }
             list_remove(scene->bodies, ind);
             body_free(body_tmp);
         } else {

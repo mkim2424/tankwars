@@ -24,6 +24,28 @@ Body *n_polygon_shape(size_t num_sides, double radius, double mass,
     return res;
 }
 
+Body *star_shape(size_t num_sides, double radius, double mass,
+    RGBColor color, Vector centroid, BodyType bt) {
+    List *vertices = list_init(num_sides, (FreeFunc) vec_free);
+    double theta = 2 * M_PI / num_sides;
+    Vector start = (Vector) {.x = radius, .y = 0};
+    Vector inside = (Vector) {.x = 2 * radius / 5, .y = 0};
+    size_t i;
+
+    for (i = 0; i < num_sides; i++) {
+        Vector tmp = vec_rotate(start, theta * i);
+        Vector tmp2 = vec_rotate(inside, theta * i + (theta / 2));
+        list_add(vertices, vec_init(tmp.x, tmp.y));
+        list_add(vertices, vec_init(tmp2.x, tmp2.y));
+    }
+    Body_info *body_i = malloc(sizeof(Body_info));
+    body_i->b = bt;
+
+    Body *res = body_init_with_info(vertices, mass, color, body_i, free);
+    body_set_centroid(res, centroid);
+    return res;
+}
+
 Body *enemy_shape(size_t num_sides, double radius, Vector position) {
     List *vertices = list_init(num_sides, (FreeFunc) vec_free);
 

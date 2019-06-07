@@ -20,7 +20,8 @@ typedef enum {
     WALL,
     WALL_BREAK,
     BULLET1,
-    BULLET2
+    BULLET2,
+    EXPLOSION
 } BodyType;
 
 
@@ -31,7 +32,8 @@ typedef struct {
 Body *n_polygon_shape(size_t num_sides, double radius, double mass,
     RGBColor color, Vector centroid, BodyType bt);
 
-Body *star_shape(size_t num_sides);
+Body *star_shape(size_t num_sides, double radius, double mass,
+    RGBColor color, Vector centroid, BodyType bt);
 
 Body *pac_man_shape();
 
