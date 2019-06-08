@@ -489,12 +489,12 @@ bool game_over(Scene *scene) {
     }
 
     if (tank1_alive == false) {
-        Mix_PlayChannel( -1, boom, 0 );
+        //Mix_PlayChannel( -1, boom, 0 );
         printf("Red Tank wins!\n");
     }
 
     if (tank2_alive == false) {
-        Mix_PlayChannel( -1, boom, 0 );
+        //Mix_PlayChannel( -1, boom, 0 );
         printf("Blue Tank wins!\n");
     }
 
@@ -541,7 +541,7 @@ void delay(int number_of_seconds)
     // Converting time into milli_seconds
     int milli_seconds = 1000 * number_of_seconds;
 
-    // Stroing start time
+    // Storing start time
     clock_t start_time = clock();
 
     // looping till required time is not acheived

@@ -109,6 +109,18 @@ BodyType get_bodytype(Scene *scene, size_t n) {
     return (*tmp).b;
 }
 
+void make_delay(int number_of_seconds)
+{
+    // Converting time into milli_seconds
+    int milli_seconds = 1000 * number_of_seconds;
+
+    // Storing start time
+    clock_t start_time = clock();
+
+    // looping till required time is not acheived
+    while (clock() < start_time + milli_seconds);
+}
+
 void scene_tick(Scene *scene, double dt) {
     assert(scene != NULL);
     size_t ind = 0;
@@ -169,17 +181,33 @@ void scene_tick(Scene *scene, double dt) {
         if (body_is_removed(body_tmp)) {
             Body_info *body_i = body_get_info(body_tmp);
             if (body_i->b == TWO && !explosion) {
+                Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 );
+                Mix_Chunk *boom = Mix_LoadWAV("sounds/Explosion+3.wav");
+                Mix_FreeChunk(boom);
+                Mix_PlayChannel( -1, boom, 0 );
                 for (size_t i = 0; i < 5; i++) {
-                    Body *b1 = star_shape(10-i, 200-20*i,
-                        100, (RGBColor) {.r = 1, .g = 1 - i*0.2, .b = 0}, body_get_centroid(body_tmp), EXPLOSION);
-                    scene_add_body(scene, b1);
+                    for (size_t j = 0; j <= i; j++) {
+                        Body *b1 = star_shape(5+2*j, 200-((5-i)*10)-25*j,
+                            100, (RGBColor) {.r = 1, .g = 1-j*0.2, .b = 0}, body_get_centroid(body_tmp), EXPLOSION);
+                        scene_add_body(scene, b1);
+                    }
+                    make_delay(120);
+                    sdl_render_scene(scene);
                 }
             }
             else if (body_i->b == ONE && !explosion) {
+                Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 );
+                Mix_Chunk *boom = Mix_LoadWAV("sounds/Explosion+3.wav");
+                Mix_FreeChunk(boom);
+                Mix_PlayChannel( -1, boom, 0 );
                 for (size_t i = 0; i < 5; i++) {
-                    Body *b1 = star_shape(10-i, 200-20*i,
-                        100, (RGBColor) {.r = 1, .g = 1 - i*0.2, .b = 0}, body_get_centroid(body_tmp), EXPLOSION);
-                    scene_add_body(scene, b1);
+                    for (size_t j = 0; j <= i; j++) {
+                        Body *b1 = star_shape(5+2*j, 200-((5-i)*10)-25*j,
+                            100, (RGBColor) {.r = 1, .g = 1-j*0.2, .b = 0}, body_get_centroid(body_tmp), EXPLOSION);
+                        scene_add_body(scene, b1);
+                    }
+                    make_delay(120);
+                    sdl_render_scene(scene);
                 }
             }
             list_remove(scene->bodies, ind);

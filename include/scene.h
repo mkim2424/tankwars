@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+#include <SDL2/SDL_Mixer.h>
 
 #include "body.h"
 #include "list.h"
