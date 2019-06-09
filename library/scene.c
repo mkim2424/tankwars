@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "sdl_wrapper.h"
 
 #define INIT_SIZE 10
 
