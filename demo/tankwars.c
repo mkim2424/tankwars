@@ -48,7 +48,6 @@ const RGBColor shrub_color = {.r = 0, .g = 0.7, .b = 0.3};
 // global variables for music and shooting/explosion sounds
 Mix_Music *music = NULL;
 Mix_Chunk *shoot = NULL;
-Mix_Chunk *boom = NULL;
 
 /*
  * Helper function to get the nth bodytype in a scene.
@@ -489,12 +488,10 @@ bool game_over(Scene *scene) {
     }
 
     if (tank1_alive == false) {
-        //Mix_PlayChannel( -1, boom, 0 );
         printf("Red Tank wins!\n");
     }
 
     if (tank2_alive == false) {
-        //Mix_PlayChannel( -1, boom, 0 );
         printf("Blue Tank wins!\n");
     }
 
@@ -552,7 +549,6 @@ int main(int argc, char *argv[]) {
     Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 );
     music = Mix_LoadMUS("sounds/background.wav");
     shoot = Mix_LoadWAV("sounds/quick2.wav");
-    boom = Mix_LoadWAV("sounds/Explosion+3.wav");
     Mix_PlayMusic(music, -1);
     double dt;
     Scene *scene = create_game();
@@ -569,6 +565,5 @@ int main(int argc, char *argv[]) {
 
     Mix_FreeMusic(music);
     Mix_FreeChunk(shoot);
-    Mix_FreeChunk(boom);
     return 0;
 }
