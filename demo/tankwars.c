@@ -45,9 +45,11 @@ const RGBColor wall_break_color = {.r = 1, .g = .35, .b = 0};
 const RGBColor shrub_color = {.r = 0, .g = 0.7, .b = 0.3};
 
 
+// global variables for music and shooting/explosion sounds
 Mix_Music *music = NULL;
 Mix_Chunk *shoot = NULL;
 Mix_Chunk *boom = NULL;
+
 /*
  * Helper function to get the nth bodytype in a scene.
  *
@@ -77,6 +79,8 @@ void set_rotation(Body *p) {
     }
 }
 
+
+// creates new bullet for tank1
 void shoot_bullet1(Scene *scene, Body *tank1, Body *tank2, Body *turret) {
     double angle = body_get_angle(turret);
     Body *bullet = n_polygon_shape(20, 20, 10,
@@ -96,6 +100,7 @@ void shoot_bullet1(Scene *scene, Body *tank1, Body *tank2, Body *turret) {
     scene_add_body(scene, bullet);
 }
 
+// creates new bullet for tank2
 void shoot_bullet2(Scene *scene, Body *tank2, Body *tank1, Body *turret) {
     double angle = body_get_angle(turret);
     Body *bullet = n_polygon_shape(20, 20, 10,
@@ -115,25 +120,18 @@ void shoot_bullet2(Scene *scene, Body *tank2, Body *tank1, Body *turret) {
     scene_add_body(scene, bullet);
 }
 
-int count_bullet1(Scene *scene) {
+
+// counts number of bullets (BULLET1 or BULLET2) in the scene
+int count_bullet(Scene *scene, BodyType bullet_type) {
     int count = 0;
     for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == BULLET1) {
+        if (get_nth_bodytype(scene, i) == bullet_type) {
             count += 1;
         }
     }
     return count;
 }
 
-int count_bullet2(Scene *scene) {
-    int count = 0;
-    for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == BULLET2) {
-            count += 1;
-        }
-    }
-    return count;
-}
 
 
 // Movement and actions for different keys
@@ -215,7 +213,7 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                     body_set_rate(t1, -2);
                     break;
                 case 121:
-                    if (count_bullet1(scene) < 5) {
+                    if (count_bullet(scene, BULLET1) < 5) {
                         Mix_PlayChannel( -1, shoot, 0 );
                         shoot_bullet1(scene, p1, p2, t1);
                     }
@@ -268,7 +266,7 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                     body_set_rate(t2, -2);
                     break;
                 case ' ':
-                    if (count_bullet2(scene) < 5) {
+                    if (count_bullet(scene, BULLET2) < 5) {
                         Mix_PlayChannel( -1, shoot, 0 );
                         shoot_bullet2(scene, p2, p1, t2);
                     }
@@ -452,6 +450,8 @@ void draw_tanks(Scene *scene) {
     scene_add_body(scene, turret2);
 }
 
+
+// updates the angle and centroid of the turrets
 void update_turret(Scene *scene) {
     Body *p1, *p2, *t1, *t2;
     for (int i = 0; i < scene_bodies(scene); i++) {
@@ -514,7 +514,6 @@ bool check_explosion(Scene *scene) {
 // Start the game and return all scene components
 Scene *create_game() {
     Scene *scene = scene_init();
-    // system("afplay /Users/matthewkim/Desktop/CS03/tankwars/sounds/background.wav");
     sdl_init(min, max);
     sdl_on_key(on_key, scene);
     draw_background(scene);
@@ -549,6 +548,7 @@ void delay(int number_of_seconds)
 }
 
 int main(int argc, char *argv[]) {
+    // instantiate audio components
     Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 );
     music = Mix_LoadMUS("sounds/background.wav");
     shoot = Mix_LoadWAV("sounds/quick2.wav");
@@ -556,7 +556,6 @@ int main(int argc, char *argv[]) {
     Mix_PlayMusic(music, -1);
     double dt;
     Scene *scene = create_game();
-    //system("eog ../images/explosions.png");
     while (!sdl_is_done()) {
         dt = time_since_last_tick();
         update_turret(scene);

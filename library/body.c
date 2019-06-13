@@ -202,11 +202,5 @@ void increment_num_collided(Body *body) {
     body->num_collided += 1;
 }
 
-// int get_num_shot_bullets(Body *body) {
-//     return body->num_shot_bullets;
-// }
 
-// void increment_num_shot_bullets(Body *body) {
-//     body->num_shot_bullets += 1;
-// }
 

@@ -203,10 +203,9 @@ bool body_is_collided(Body *body);
 // checks number of times body collided
 int get_num_collided(Body *body);
 
+// increments number of times body has collided
 void increment_num_collided(Body *body);
 
-// int get_num_shot_bullets(Body *body);
 
-// void increment_num_shot_bullets(Body *body);
 
 #endif // #ifndef __BODY_H__
