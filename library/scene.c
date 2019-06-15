@@ -189,7 +189,8 @@ void scene_tick(Scene *scene, double dt) {
                 for (size_t i = 0; i < 5; i++) {
                     for (size_t j = 0; j <= i; j++) {
                         Body *b1 = star_shape(5+2*j, 200-((5-i)*10)-25*j,
-                            100, (RGBColor) {.r = 1, .g = 1-j*0.2, .b = 0}, body_get_centroid(body_tmp), EXPLOSION);
+                            100, (RGBColor) {.r = 1, .g = 1-j*0.2, .b = 0}, 
+                            body_get_centroid(body_tmp), EXPLOSION);
                         scene_add_body(scene, b1);
                     }
                     make_delay(120);
@@ -204,7 +205,8 @@ void scene_tick(Scene *scene, double dt) {
                 for (size_t i = 0; i < 5; i++) {
                     for (size_t j = 0; j <= i; j++) {
                         Body *b1 = star_shape(5+2*j, 200-((5-i)*10)-25*j,
-                            100, (RGBColor) {.r = 1, .g = 1-j*0.2, .b = 0}, body_get_centroid(body_tmp), EXPLOSION);
+                            100, (RGBColor) {.r = 1, .g = 1-j*0.2, .b = 0}, 
+                            body_get_centroid(body_tmp), EXPLOSION);
                         scene_add_body(scene, b1);
                     }
                     make_delay(120);

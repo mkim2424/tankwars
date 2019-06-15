@@ -31,21 +31,29 @@
 #define PLAYER_HEIGHT 50
 #define PLAYER_WIDTH 200
 #define BULLET_VELOCITY 1500
+#define MAX_NUM_BULLETS 5
+#define BULLET_CENTROID_OFFSET 200
+#define TURRET_CENTROID_OFFSET 75
+#define TANK_TANK_ELAS 0.5 // elasticity between two tanks
+#define BULLET_WALL_ELAS 0.95
+#define TANK_WALL_ELAS 0.4 
 #define INFINITE_MASS INFINITY
 
-const Vector min = {.x = 0, .y = 0};
-const Vector max = {.x = WIDTH, .y = HEIGHT};
-const Vector player_start_velocity = {.x = 0, .y = 0};
-const RGBColor tank1_color = {.r = 0, .g = 0, .b = 1};
-const RGBColor turret1_color = {.r = 0, .g = 0, .b = .6};
-const RGBColor tank2_color = {.r = 1, .g = 0, .b = 0};
-const RGBColor turret2_color = {.r = .6, .g = 0, .b = 0};
-const RGBColor wall_color = {.r = .52, .g = .52, .b = .52};
-const RGBColor wall_break_color = {.r = 1, .g = .35, .b = 0};
-const RGBColor shrub_color = {.r = 0, .g = 0.7, .b = 0.3};
+const Vector MIN = {.x = 0, .y = 0};
+const Vector MAX = {.x = WIDTH, .y = HEIGHT};
+const Vector PLAYER_START_VELOCITY = {.x = 0, .y = 0};
+const RGBColor TANK1_COLOR = {.r = 0, .g = 0, .b = 1};
+const RGBColor TURRET1_COLOR = {.r = 0, .g = 0, .b = .6};
+const RGBColor TANK2_COLOR = {.r = 1, .g = 0, .b = 0};
+const RGBColor TURRET2_COLOR = {.r = .6, .g = 0, .b = 0};
+const RGBColor WALL_COLOR = {.r = .52, .g = .52, .b = .52};
+const RGBColor WALL_BREAK_COLOR = {.r = 1, .g = .35, .b = 0};
+const RGBColor SHRUB_COLOR = {.r = 0, .g = 0.7, .b = 0.3};
+const RGBColor WHITE_COLOR = {.r = 0, .g = 0, .b = 0};
+const RGBColor BACKGROUND_COLOR = {.r = .93, .g = .875, .b = .7273};
 
 
-// global variables for music and shooting/explosion sounds
+//variables for music and shooting/explosion sounds
 Mix_Music *music = NULL;
 Mix_Chunk *shoot = NULL;
 
@@ -64,13 +72,13 @@ void set_rotation(Body *p) {
     Vector vel = body_get_velocity(p);
     if (vel.x != 0 || vel.y != 0) {
         if (vel.x == vel.y) {
-            body_set_rotation(p, M_PI/4);
+            body_set_rotation(p, M_PI / 4);
         }
         else if (vel.x == -vel.y) {
-            body_set_rotation(p, 3*M_PI/4);
+            body_set_rotation(p, 3 * M_PI / 4);
         }
         else if (vel.x == 0) {
-            body_set_rotation(p, M_PI/2);
+            body_set_rotation(p, M_PI / 2);
         }
         else {
             body_set_rotation(p, 0);
@@ -79,44 +87,56 @@ void set_rotation(Body *p) {
 }
 
 
-// creates new bullet for tank1
-void shoot_bullet1(Scene *scene, Body *tank1, Body *tank2, Body *turret) {
+/*
+ * Creates new bullet for given tank and bullet type 
+ *
+ * @param scene the scene of bodies and force creators.
+ * @parma tank_primary the body to shoot bullet from
+ * @parma tank_secondary the other tank body
+ * @parma turret of the tank_primary
+ * @parma BodyType of tank_primary
+ */
+void shoot_bullet(Scene *scene, Body *tank_primary, Body *tank_secondary, 
+    Body *turret, BodyType b) 
+{
     double angle = body_get_angle(turret);
-    Body *bullet = n_polygon_shape(20, 20, 10,
-        turret1_color, vec_add(body_get_centroid(tank1), (Vector) {.x = cos(angle) * 200, .y = sin(angle) * 200}), BULLET1);
-    body_set_velocity(bullet, (Vector) {.x = cos(angle) * BULLET_VELOCITY, .y = sin(angle) * BULLET_VELOCITY});
+    Body *bullet;
+    double centroid_offset;
+    double bullet_velocity;
+    RGBColor turret_color;
+
+    if (b == BULLET1) {
+        centroid_offset = BULLET_CENTROID_OFFSET;
+        bullet_velocity = BULLET_VELOCITY;
+        turret_color = TURRET1_COLOR;
+    }
+    else {
+        centroid_offset = -BULLET_CENTROID_OFFSET;
+        bullet_velocity = -BULLET_VELOCITY;
+        turret_color = TURRET2_COLOR;
+    }
+
+    bullet = n_polygon_shape(20, 20, 10,
+            turret_color, vec_add(body_get_centroid(tank_primary), 
+                (Vector) {.x = cos(angle) * centroid_offset, 
+                    .y = sin(angle) * centroid_offset}), b);
+    body_set_velocity(bullet, (Vector) {.x = cos(angle) * bullet_velocity, 
+        .y = sin(angle) * bullet_velocity});
+
     // create physics collision between bullet and walls
     for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == WALL || get_nth_bodytype(scene, i) == WALL_BREAK) {
+        if (get_nth_bodytype(scene, i) == WALL || 
+            get_nth_bodytype(scene, i) == WALL_BREAK) {
             Body *wall = scene_get_body(scene, i);
-            create_physics_collision(scene, 0.95, wall, bullet);
+            create_physics_collision(scene, BULLET_WALL_ELAS, wall, bullet);
         }
     }
 
     // create destruction force between bullet and both tanks
-    create_destructive_collision(scene, tank1, bullet);
-    create_destructive_collision(scene, tank2, bullet);
+    create_destructive_collision(scene, tank_primary, bullet);
+    create_destructive_collision(scene, tank_secondary, bullet);
     scene_add_body(scene, bullet);
-}
 
-// creates new bullet for tank2
-void shoot_bullet2(Scene *scene, Body *tank2, Body *tank1, Body *turret) {
-    double angle = body_get_angle(turret);
-    Body *bullet = n_polygon_shape(20, 20, 10,
-        turret2_color, vec_add(body_get_centroid(tank2), (Vector) {.x = cos(angle) * -200, .y = sin(angle) * -200}), BULLET2);
-    body_set_velocity(bullet, (Vector) {.x = cos(angle) * -BULLET_VELOCITY, .y = sin(angle) * -BULLET_VELOCITY});
-    // create physics collision between bullet and walls
-    for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == WALL || get_nth_bodytype(scene, i) == WALL_BREAK) {
-            Body *wall = scene_get_body(scene, i);
-            create_physics_collision(scene, 0.95, wall, bullet);
-        }
-    }
-
-    // create destruction force between bullet and both tanks
-    create_destructive_collision(scene, tank1, bullet);
-    create_destructive_collision(scene, tank2, bullet);
-    scene_add_body(scene, bullet);
 }
 
 
@@ -130,7 +150,6 @@ int count_bullet(Scene *scene, BodyType bullet_type) {
     }
     return count;
 }
-
 
 
 // Movement and actions for different keys
@@ -164,7 +183,6 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
         if (type == KEY_PRESSED) {
             switch (key) {
                 case 119:
-
                     if (p1 != NULL) {
                         vel = body_get_velocity(p1);
                         vel.y = PLAYER_SPEED;
@@ -212,11 +230,10 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                     body_set_rate(t1, -2);
                     break;
                 case 121:
-                    if (count_bullet(scene, BULLET1) < 5) {
+                    if (count_bullet(scene, BULLET1) < MAX_NUM_BULLETS) {
                         Mix_PlayChannel( -1, shoot, 0 );
-                        shoot_bullet1(scene, p1, p2, t1);
+                        shoot_bullet(scene, p1, p2, t1, BULLET1);
                     }
-                    // printf("\a\n");
                     break;
                 case UP_ARROW:
                     if (p2 != NULL) {
@@ -265,9 +282,9 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
                     body_set_rate(t2, -2);
                     break;
                 case ' ':
-                    if (count_bullet(scene, BULLET2) < 5) {
+                    if (count_bullet(scene, BULLET2) < MAX_NUM_BULLETS) {
                         Mix_PlayChannel( -1, shoot, 0 );
-                        shoot_bullet2(scene, p2, p1, t2);
+                        shoot_bullet(scene, p2, p1, t2, BULLET2);
                     }
             }
         } else if (type == KEY_RELEASED) {
@@ -331,18 +348,18 @@ void on_key(char key, KeyEventType type, double held_time, void *aux) {
 
 }
 
-// Checks if player has crossed any boundaries
+// Checks if given player has crossed any boundaries
 void check_player_boundary(Body *player) {
     if (body_get_centroid(player).x < PLAYER_WIDTH/2 + OFFSET) {
         body_set_centroid(player,
             (Vector) {.x = PLAYER_WIDTH/2 + OFFSET, .y = PLAYER_HEIGHT});
-        body_set_velocity(player, min);
+        body_set_velocity(player, MIN);
     }
 
     if (body_get_centroid(player).x > WIDTH - PLAYER_WIDTH/2 - OFFSET) {
         body_set_centroid(player,
-            (Vector) {.x = WIDTH - PLAYER_WIDTH/2 - OFFSET, .y = PLAYER_HEIGHT});
-        body_set_velocity(player, min);
+          (Vector) {.x = WIDTH - PLAYER_WIDTH/2 - OFFSET, .y = PLAYER_HEIGHT});
+        body_set_velocity(player, MIN);
     }
 }
 
@@ -359,86 +376,89 @@ void check_boundary(Scene *scene) {
 
 // Draw the ground
 void draw_background(Scene *scene) {
-    Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = HEIGHT / 2}, INFINITE_MASS,
-        WIDTH, HEIGHT, (RGBColor) {.r = .93, .g = .875, .b = .7273}, BACKGROUND);
+    Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = HEIGHT / 2}, 
+        INFINITE_MASS, WIDTH, HEIGHT, BACKGROUND_COLOR, BACKGROUND);
     scene_add_body(scene, b1);
 }
 
 // Draw the terrain walls
 void draw_walls(Scene *scene) {
-
     RGBColor wall_c;
     BodyType wall_type;
     for (size_t i = 0; i < 8; i++) {
         if (i % 2 == 0) {
-            wall_c = wall_color;
+            wall_c = WALL_COLOR;
             wall_type = WALL;
         }
 
         else {
-            wall_c = wall_break_color;
+            wall_c = WALL_BREAK_COLOR;
             wall_type = WALL_BREAK;
         }
-        Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = (HEIGHT / 2) - (3.5 * WALL_LENGTH) + (i * (WALL_LENGTH + 10))}, INFINITE_MASS,
+        Body *b1 = rectangle_shape((Vector) {.x = WIDTH / 2, .y = (HEIGHT / 2) 
+            - (3.5 * WALL_LENGTH) + (i * (WALL_LENGTH + 10))}, INFINITE_MASS,
             WALL_LENGTH, WALL_LENGTH, wall_c, wall_type);
         scene_add_body(scene, b1);
     }
 
-
     // draw shrubs
-    Body *shrub = rectangle_shape((Vector) {.x = 3250, .y = 1600}, INFINITE_MASS,
-            WALL_LENGTH * 2, WALL_LENGTH * 2, shrub_color, WALL);
-    Body *shrub1 = rectangle_shape((Vector) {.x = 3250, .y = 400}, INFINITE_MASS,
-            WALL_LENGTH * 2, WALL_LENGTH * 2, shrub_color, WALL);
-    Body *shrub2 = rectangle_shape((Vector) {.x = 700, .y = 1600}, INFINITE_MASS,
-            WALL_LENGTH * 2, WALL_LENGTH * 2, shrub_color, WALL);
-    Body *shrub3 = rectangle_shape((Vector) {.x = 700, .y = 400}, INFINITE_MASS,
-            WALL_LENGTH * 2, WALL_LENGTH * 2, shrub_color, WALL);
+    Body *shrub = rectangle_shape((Vector) {.x = 3250, .y = 1600}, 
+        INFINITE_MASS, WALL_LENGTH * 2, WALL_LENGTH * 2, SHRUB_COLOR, WALL);
+    Body *shrub1 = rectangle_shape((Vector) {.x = 3250, .y = 400}, 
+        INFINITE_MASS, WALL_LENGTH * 2, WALL_LENGTH * 2, SHRUB_COLOR, WALL);
+    Body *shrub2 = rectangle_shape((Vector) {.x = 700, .y = 1600}, 
+        INFINITE_MASS, WALL_LENGTH * 2, WALL_LENGTH * 2, SHRUB_COLOR, WALL);
+    Body *shrub3 = rectangle_shape((Vector) {.x = 700, .y = 400}, 
+        INFINITE_MASS, WALL_LENGTH * 2, WALL_LENGTH * 2, SHRUB_COLOR, WALL);
     scene_add_body(scene, shrub);
     scene_add_body(scene, shrub1);
     scene_add_body(scene, shrub2);
     scene_add_body(scene, shrub3);
 }
 
+
 void draw_boundaries(Scene *scene) {
-    Body *b1 = rectangle_shape((Vector) {.x = WIDTH/2, .y = HEIGHT}, INFINITE_MASS,
-        WIDTH, 20, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
+    Body *b1 = rectangle_shape((Vector) {.x = WIDTH/2, .y = HEIGHT}, 
+        INFINITE_MASS, WIDTH, 20, WHITE_COLOR, WALL);
     Body *b2 = rectangle_shape((Vector) {.x = WIDTH/2, .y = 0}, INFINITE_MASS,
-        WIDTH, 20, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
+        WIDTH, 20, WHITE_COLOR, WALL);
     Body *b3 = rectangle_shape((Vector) {.x = 0, .y = HEIGHT/2}, INFINITE_MASS,
-        20, HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
-    Body *b4 = rectangle_shape((Vector) {.x = WIDTH, .y = HEIGHT/2}, INFINITE_MASS,
-        20, HEIGHT, (RGBColor) {.r = 0, .g = 0, .b = 0}, WALL);
+        20, HEIGHT, WHITE_COLOR, WALL);
+    Body *b4 = rectangle_shape((Vector) {.x = WIDTH, .y = HEIGHT/2}, 
+        INFINITE_MASS, 20, HEIGHT, WHITE_COLOR, WALL);
     scene_add_body(scene, b1);
     scene_add_body(scene, b2);
     scene_add_body(scene, b3);
     scene_add_body(scene, b4);
 
-
 }
 
 void draw_tanks(Scene *scene) {
     Body *tank1 = rectangle_shape((Vector) {.x = WIDTH / 8,
-        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, tank1_color, ONE);
+        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, TANK1_COLOR, ONE);
     Body *tank2 = rectangle_shape((Vector) {.x = 7 * WIDTH / 8,
-        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, tank2_color, TWO);
+        .y = HEIGHT / 2}, TANK_MASS, TANK_WIDTH, TANK_HEIGHT, TANK2_COLOR, TWO);
     Body *turret1 = rectangle_shape((Vector) {.x = WIDTH / 8 + 75,
-        .y = HEIGHT / 2}, TANK_MASS, TURRET_WIDTH, TURRET_HEIGHT, turret1_color, TURRET_ONE);
+        .y = HEIGHT / 2}, TANK_MASS, TURRET_WIDTH, TURRET_HEIGHT, TURRET1_COLOR,
+         TURRET_ONE);
     Body *turret2 = rectangle_shape((Vector) {.x = 7 * WIDTH / 8 - 75,
-        .y = HEIGHT / 2}, TANK_MASS, TURRET_WIDTH, TURRET_HEIGHT, turret2_color, TURRET_TWO);
-    body_set_velocity(tank1, player_start_velocity);
-    body_set_velocity(tank2, player_start_velocity);
-    body_set_velocity(turret1, player_start_velocity);
-    body_set_velocity(turret2, player_start_velocity);
+        .y = HEIGHT / 2}, TANK_MASS, TURRET_WIDTH, TURRET_HEIGHT, TURRET2_COLOR,
+         TURRET_TWO);
+    body_set_velocity(tank1, PLAYER_START_VELOCITY);
+    body_set_velocity(tank2, PLAYER_START_VELOCITY);
+    body_set_velocity(turret1, PLAYER_START_VELOCITY);
+    body_set_velocity(turret2, PLAYER_START_VELOCITY);
+
     // create physics collisions between two tanks
-    create_physics_collision(scene, 0.5, tank1, tank2);
+    create_physics_collision(scene, TANK_TANK_ELAS, tank1, tank2);
 
     // create physics collisions between walls and tanks
     for (int i = 0; i < scene_bodies(scene); i++) {
-        if (get_nth_bodytype(scene, i) == WALL || get_nth_bodytype(scene, i) == WALL_BREAK) {
+        if (get_nth_bodytype(scene, i) == WALL || 
+            get_nth_bodytype(scene, i) == WALL_BREAK) {
             Body *w = scene_get_body(scene, i);
-            create_physics_collision(scene, 0.4, tank1, w);
-            create_physics_collision(scene, 0.4, tank2, w);
+            create_physics_collision(scene, TANK_WALL_ELAS, tank1, w);
+            create_physics_collision(scene, TANK_WALL_ELAS, tank2, w);
         }
     }
 
@@ -468,9 +488,13 @@ void update_turret(Scene *scene) {
         }
     }
     double new_angle = body_get_angle(t1);
-    body_set_centroid(t1, vec_add(body_get_centroid(p1), (Vector) {.x = cos(new_angle) * 75, .y = sin(new_angle) * 75}));
+    body_set_centroid(t1, vec_add(body_get_centroid(p1), 
+        (Vector) {.x = cos(new_angle) * TURRET_CENTROID_OFFSET, 
+            .y = sin(new_angle) * TURRET_CENTROID_OFFSET}));
     new_angle = body_get_angle(t2);
-    body_set_centroid(t2, vec_add(body_get_centroid(p2), (Vector) {.x = cos(new_angle) * -75, .y = sin(new_angle) * -75}));
+    body_set_centroid(t2, vec_add(body_get_centroid(p2), 
+        (Vector) {.x = cos(new_angle) * -TURRET_CENTROID_OFFSET, 
+            .y = sin(new_angle) * -TURRET_CENTROID_OFFSET}));
 }
 
 
@@ -511,7 +535,7 @@ bool check_explosion(Scene *scene) {
 // Start the game and return all scene components
 Scene *create_game() {
     Scene *scene = scene_init();
-    sdl_init(min, max);
+    sdl_init(MIN, MAX);
     sdl_on_key(on_key, scene);
     draw_background(scene);
     draw_boundaries(scene);
@@ -546,7 +570,7 @@ void delay(int number_of_seconds)
 
 int main(int argc, char *argv[]) {
     // instantiate audio components
-    Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 );
+    Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
     music = Mix_LoadMUS("sounds/background.wav");
     shoot = Mix_LoadWAV("sounds/quick2.wav");
     Mix_PlayMusic(music, -1);
@@ -562,7 +586,6 @@ int main(int argc, char *argv[]) {
             restart_game(scene);
         }
     }
-
     Mix_FreeMusic(music);
     Mix_FreeChunk(shoot);
     return 0;

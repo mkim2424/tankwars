@@ -15,7 +15,6 @@ struct body {
     bool is_collided;
     double rate;
     int num_collided;
-    // int num_shot_bullets;
 };
 
 Body *body_init(List *shape, double mass, RGBColor color) {
@@ -159,7 +158,8 @@ void body_tick(Body *body, double dt) {
         return;
     }
 
-    Vector a   = vec_add(vec_multiply(1.0 / body_get_mass(body), body->force), vec_multiply((1.0 / dt) / body_get_mass(body), body->impulse));
+    Vector a   = vec_add(vec_multiply(1.0 / body_get_mass(body), body->force), 
+        vec_multiply((1.0 / dt) / body_get_mass(body), body->impulse));
     Vector dv  = vec_multiply(dt, a);
     Vector avg = vec_add(body_get_velocity(body), vec_multiply(0.5, dv));
     Vector dx  = vec_multiply(dt, avg);

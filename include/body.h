@@ -193,7 +193,6 @@ void body_remove(Body *body);
  */
 bool body_is_removed(Body *body);
 
-
 // changes the collided status of body
 void body_collided(Body *body, bool stat);
 

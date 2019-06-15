@@ -6,12 +6,10 @@ float get_rand() {
     return rand() / (double) RAND_MAX;
 }
 
-// Returns a random RGB color
 RGBColor random_color() {
     return (RGBColor) {.r = get_rand(), .g = get_rand(), .b = get_rand()};
 }
 
-// Returns colors of a rainbow
 RGBColor get_color(size_t i) {
     RGBColor color;
     switch (i) {

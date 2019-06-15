@@ -13,8 +13,10 @@ typedef struct {
     float b;
 } RGBColor;
 
+// Returns a random RGB color
 RGBColor random_color();
 
+// Returns colors of a rainbow given index
 RGBColor get_color(size_t i);
 
 #endif // #ifndef __COLOR_H__

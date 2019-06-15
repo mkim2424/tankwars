@@ -14,6 +14,6 @@ typedef struct {
 // Determines if Projections p1 and p2 overlaps
 bool overlaps(Projection p1, Projection p2);
 
-
+// Gets overlap between given projections
 double getOverlap(Projection p1, Projection p2);
 #endif // #ifndef __PROJECTION_H__
